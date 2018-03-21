@@ -197,6 +197,9 @@ func gcinit() {
 }
 
 func readgogc() int32 {
+	//DARA MOD TURN OFF GARBAGE COLLECTION
+	return -1
+	//END DARA MOD
 	p := gogetenv("GOGC")
 	if p == "off" {
 		return -1

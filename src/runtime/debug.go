@@ -62,3 +62,12 @@ func NumGoroutine() int {
 func debug_modinfo() string {
 	return modinfo
 }
+//DARA MMAP export
+func Mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) (p unsafe.Pointer, err int) {
+	return mmap(addr,n,prot,flags,fd,off)
+}
+
+func Munmap(addr unsafe.Pointer, n uintptr) {
+	munmap(addr,n)
+}
+//DARA /MMAP export

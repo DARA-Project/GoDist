@@ -4,6 +4,11 @@
 
 package os
 
+import (
+	"dara"
+	"runtime"
+)
+
 // Executable returns the path name for the executable that started
 // the current process. There is no guarantee that the path is still
 // pointing to the correct executable. If a symlink was used to start
@@ -16,5 +21,15 @@ package os
 // The main use case is finding resources located relative to an
 // executable.
 func Executable() (string, error) {
-	return executable()
+	str, err := executable()
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[EXECUTABLE]") })
+		retInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(retInfo1.String[:], str)
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_EXECUTABLE, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE, syscallInfo)
+	}
+	return str, err
 }

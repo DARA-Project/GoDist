@@ -5,6 +5,7 @@
 package os
 
 import (
+	"dara"
 	"internal/testlog"
 	"runtime"
 	"sync"
@@ -68,10 +69,30 @@ type Signal interface {
 }
 
 // Getpid returns the process id of the caller.
-func Getpid() int { return syscall.Getpid() }
+func Getpid() int {
+	i := syscall.Getpid()
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[GETPID]") })
+		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPID, syscallInfo)
+	}
+	return i
+}
 
 // Getppid returns the process id of the caller's parent.
-func Getppid() int { return syscall.Getppid() }
+func Getppid() int {
+	i := syscall.Getppid()
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[GETPPID]") })
+		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID, syscallInfo)
+	}
+	return i
+}
 
 // FindProcess looks for a running process by its pid.
 //

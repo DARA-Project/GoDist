@@ -7,6 +7,7 @@
 package os
 
 import (
+	"dara"
 	"runtime"
 	"syscall"
 	"time"
@@ -76,6 +77,21 @@ func syscallMode(i FileMode) (o uint32) {
 
 // See docs in file.go:Chmod.
 func chmod(name string, mode FileMode) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHMOD] : ")
+		    print(name)
+		    print(" ")
+		    println(mode)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CHMOD, 1, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHMOD, syscallInfo)
+	}
 	if e := syscall.Chmod(fixLongPath(name), syscallMode(mode)); e != nil {
 		return &PathError{"chmod", name, e}
 	}
@@ -84,6 +100,21 @@ func chmod(name string, mode FileMode) error {
 
 // See docs in file.go:(*File).Chmod.
 func (f *File) chmod(mode FileMode) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHMOD] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(mode)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FCHMOD, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FCHMOD, syscallInfo)
+	}
 	if err := f.checkValid("chmod"); err != nil {
 		return err
 	}
@@ -101,6 +132,24 @@ func (f *File) chmod(mode FileMode) error {
 // On Windows or Plan 9, Chown always returns the syscall.EWINDOWS or
 // EPLAN9 error, wrapped in *PathError.
 func Chown(name string, uid, gid int) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHOWN] : ")
+		    print(name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CHOWN, 3, 1, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHOWN, syscallInfo)
+	}
 	if e := syscall.Chown(name, uid, gid); e != nil {
 		return &PathError{"chown", name, e}
 	}
@@ -114,6 +163,24 @@ func Chown(name string, uid, gid int) error {
 // On Windows, it always returns the syscall.EWINDOWS error, wrapped
 // in *PathError.
 func Lchown(name string, uid, gid int) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[LCHOWN] : ")
+		    print(name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LCHOWN, 3, 1, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LCHOWN, syscallInfo)
+	}
 	if e := syscall.Lchown(name, uid, gid); e != nil {
 		return &PathError{"lchown", name, e}
 	}
@@ -126,6 +193,24 @@ func Lchown(name string, uid, gid int) error {
 // On Windows, it always returns the syscall.EWINDOWS error, wrapped
 // in *PathError.
 func (f *File) Chown(uid, gid int) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHOWN] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FCHOWN, 3, 1, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FCHOWN, syscallInfo)
+	}
 	if err := f.checkValid("chown"); err != nil {
 		return err
 	}
@@ -139,6 +224,21 @@ func (f *File) Chown(uid, gid int) error {
 // It does not change the I/O offset.
 // If there is an error, it will be of type *PathError.
 func (f *File) Truncate(size int64) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[FTRUNCATE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(size)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: size}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FTRUNCATE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FTRUNCATE, syscallInfo)
+	}
 	if err := f.checkValid("truncate"); err != nil {
 		return err
 	}
@@ -152,6 +252,18 @@ func (f *File) Truncate(size int64) error {
 // Typically, this means flushing the file system's in-memory copy
 // of recently written data to disk.
 func (f *File) Sync() error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[FSYNC] : ")
+		    println(f.file.name)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FSYNC, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FSYNC, syscallInfo)
+	}
 	if err := f.checkValid("sync"); err != nil {
 		return err
 	}
@@ -168,6 +280,26 @@ func (f *File) Sync() error {
 // less precise time unit.
 // If there is an error, it will be of type *PathError.
 func Chtimes(name string, atime time.Time, mtime time.Time) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[UTIMES] : ")
+		    print(name)
+		    print(" ")
+		    print(atime.String())
+		    print(" ")
+		    println(mtime.String())
+        })
+		argInfo1 := dara.GeneralType{Type:dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], atime.String())
+		argInfo3 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo3.String[:], mtime.String())
+		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_UTIMES, 3, 1, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_UTIMES, syscallInfo)
+	}
 	var utimes [2]syscall.Timespec
 	utimes[0] = syscall.NsecToTimespec(atime.UnixNano())
 	utimes[1] = syscall.NsecToTimespec(mtime.UnixNano())
@@ -181,6 +313,18 @@ func Chtimes(name string, atime time.Time, mtime time.Time) error {
 // which must be a directory.
 // If there is an error, it will be of type *PathError.
 func (f *File) Chdir() error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHDIR] : ")
+		    println(f.file.name)
+        })
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FCHDIR, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FCHDIR, syscallInfo)
+	}
 	if err := f.checkValid("chdir"); err != nil {
 		return err
 	}
@@ -192,6 +336,22 @@ func (f *File) Chdir() error {
 
 // setDeadline sets the read and write deadline.
 func (f *File) setDeadline(t time.Time) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
+		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETDEADLINE, syscallInfo)
+	}
 	if err := f.checkValid("SetDeadline"); err != nil {
 		return err
 	}
@@ -200,6 +360,22 @@ func (f *File) setDeadline(t time.Time) error {
 
 // setReadDeadline sets the read deadline.
 func (f *File) setReadDeadline(t time.Time) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetReadDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
+		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETREADDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETREADDEADLINE, syscallInfo)
+	}
 	if err := f.checkValid("SetReadDeadline"); err != nil {
 		return err
 	}
@@ -208,6 +384,22 @@ func (f *File) setReadDeadline(t time.Time) error {
 
 // setWriteDeadline sets the write deadline.
 func (f *File) setWriteDeadline(t time.Time) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetWriteDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
+		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETWRITEDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETWRITEDEADLINE, syscallInfo)
+	}
 	if err := f.checkValid("SetWriteDeadline"); err != nil {
 		return err
 	}

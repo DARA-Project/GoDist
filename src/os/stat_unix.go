@@ -7,12 +7,27 @@
 package os
 
 import (
+	"dara"
+	"runtime"
 	"syscall"
 )
 
 // Stat returns the FileInfo structure describing file.
 // If there is an error, it will be of type *PathError.
 func (f *File) Stat() (FileInfo, error) {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() {
+            print("[FSTAT] : ")
+		    println(f.file.name)
+        })
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], f.name)
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FSTAT, syscallInfo)
+	}
 	if f == nil {
 		return nil, ErrInvalid
 	}
@@ -28,6 +43,16 @@ func (f *File) Stat() (FileInfo, error) {
 // statNolog stats a file with no test logging.
 func statNolog(name string) (FileInfo, error) {
 	var fs fileStat
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[STAT] : " + name) })
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], name)
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_STAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_STAT, syscallInfo)
+	}
 	err := syscall.Stat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"stat", name, err}
@@ -39,6 +64,16 @@ func statNolog(name string) (FileInfo, error) {
 // lstatNolog lstats a file with no test logging.
 func lstatNolog(name string) (FileInfo, error) {
 	var fs fileStat
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[LSTAT] : " + name) })
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], name)
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LSTAT, syscallInfo)
+	}
 	err := syscall.Lstat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"lstat", name, err}

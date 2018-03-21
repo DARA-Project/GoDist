@@ -6,6 +6,7 @@ package runtime
 
 import (
 	"runtime/internal/atomic"
+    "dara"
 	_ "unsafe" // for go:linkname
 )
 
@@ -61,5 +62,9 @@ func os_runtime_args() []string { return append([]string{}, argslice...) }
 //go:linkname syscall_Exit syscall.Exit
 //go:nosplit
 func syscall_Exit(code int) {
+    if DaraInitialised {
+        dprint(dara.DEBUG, func() {println("[GoRuntime]syscall.Exit was called with code : ", code)})
+        endDara()
+    }
 	exit(int32(code))
 }

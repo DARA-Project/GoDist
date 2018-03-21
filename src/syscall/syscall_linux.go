@@ -149,6 +149,7 @@ func Mknod(path string, mode uint32, dev int) (err error) {
 }
 
 func Open(path string, mode int, perm uint32) (fd int, err error) {
+//	println("Opening file " + path) 
 	return openat(_AT_FDCWD, path, mode|O_LARGEFILE, perm)
 }
 
@@ -527,6 +528,9 @@ func anyToSockaddr(rsa *RawSockaddrAny) (Sockaddr, error) {
 }
 
 func Accept(fd int) (nfd int, sa Sockaddr, err error) {
+    // DARA Instrumentaion
+    print("[ACCEPT] : +")
+    println(fd)
 	var rsa RawSockaddrAny
 	var len _Socklen = SizeofSockaddrAny
 	nfd, err = accept(fd, &rsa, &len)

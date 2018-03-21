@@ -9,6 +9,7 @@ package runtime
 import (
 	"runtime/internal/atomic"
 	"unsafe"
+    "dara"
 )
 
 // sigTabT is the type of an entry in the global sigtable array.

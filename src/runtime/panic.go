@@ -8,6 +8,7 @@ import (
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
+    "dara"
 )
 
 // We have two different ways of doing defers. The older way involves creating a
@@ -1061,6 +1062,11 @@ func gopanic(e interface{}) {
 	// and String methods to prepare the panic strings before startpanic.
 	preprintpanics(gp._panic)
 
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]dopanic : Inside panic now")})
+        LogCrash(procchan[DPid].Routines[int(gp.goid)])
+        endDara()
+	}	
 	fatalpanic(gp._panic) // should not return
 	*(*int)(nil) = 0      // not reached
 }
@@ -1113,6 +1119,11 @@ func throw(s string) {
 	if gp.m.throwing == 0 {
 		gp.m.throwing = 1
 	}
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]throw : Inside throw now")})
+        LogCrash(procchan[DPid].Routines[int(gp.goid)])
+        endDara()
+    }
 	fatalthrow()
 	*(*int)(nil) = 0 // not reached
 }
