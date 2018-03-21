@@ -10,7 +10,11 @@ import (
 )
 
 // Getpagesize returns the underlying system's memory page size.
-func Getpagesize() int { return syscall.Getpagesize() }
+func Getpagesize() int {
+    // DARA Instrumentation
+    println("[GETPAGESIZE]")
+    return syscall.Getpagesize()
+}
 
 // File represents an open file descriptor.
 type File struct {

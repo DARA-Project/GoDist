@@ -27,28 +27,46 @@ func runtime_args() []string // in package runtime
 // Getuid returns the numeric user id of the caller.
 //
 // On Windows, it returns -1.
-func Getuid() int { return syscall.Getuid() }
+func Getuid() int {
+    // DARA Instrumentation
+    println("[GETUID]")
+    return syscall.Getuid()
+}
 
 // Geteuid returns the numeric effective user id of the caller.
 //
 // On Windows, it returns -1.
-func Geteuid() int { return syscall.Geteuid() }
+func Geteuid() int {
+    // DARA Instrumentation
+    println("[GETEUID]")
+    return syscall.Geteuid()
+}
 
 // Getgid returns the numeric group id of the caller.
 //
 // On Windows, it returns -1.
-func Getgid() int { return syscall.Getgid() }
+func Getgid() int {
+    // DARA Instrumentation
+    println("[GETGID]")
+    return syscall.Getgid()
+}
 
 // Getegid returns the numeric effective group id of the caller.
 //
 // On Windows, it returns -1.
-func Getegid() int { return syscall.Getegid() }
+func Getegid() int {
+    // DARA Instrumentation
+    println("[GETEGID]")
+    return syscall.Getegid()
+}
 
 // Getgroups returns a list of the numeric ids of groups that the caller belongs to.
 //
 // On Windows, it returns syscall.EWINDOWS. See the os/user package
 // for a possible alternative.
 func Getgroups() ([]int, error) {
+    // DARA Instrumentation
+    println("[GETGROUPS]")
 	gids, e := syscall.Getgroups()
 	return gids, NewSyscallError("getgroups", e)
 }
@@ -57,6 +75,8 @@ func Getgroups() ([]int, error) {
 // Conventionally, code zero indicates success, non-zero an error.
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
+    print("[EXIT] : ")
+    println(code)
 	if code == 0 {
 		// Give race detector a chance to fail the program.
 		// Racy programs do not have the right to finish successfully.

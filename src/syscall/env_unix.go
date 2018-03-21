@@ -55,6 +55,8 @@ func copyenv() {
 }
 
 func Unsetenv(key string) error {
+    // DARA Instrumentation
+    println("[UNSETENV] : " + key)
 	envOnce.Do(copyenv)
 
 	envLock.Lock()
@@ -69,6 +71,8 @@ func Unsetenv(key string) error {
 }
 
 func Getenv(key string) (value string, found bool) {
+    // DARA Instrumentation
+    println("[GETENV] : " + key)
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return "", false
@@ -91,6 +95,8 @@ func Getenv(key string) (value string, found bool) {
 }
 
 func Setenv(key, value string) error {
+    // DARA Instrumentation
+    println("[SETENV] : " + key +  " "  + value)
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return EINVAL
@@ -123,6 +129,8 @@ func Setenv(key, value string) error {
 }
 
 func Clearenv() {
+    // DARA Instrumentation
+    println("[CLEARENV]")
 	envOnce.Do(copyenv) // prevent copyenv in Getenv/Setenv
 
 	envLock.Lock()
@@ -136,6 +144,8 @@ func Clearenv() {
 }
 
 func Environ() []string {
+    // DARA Instrumentation
+    println("[ENVIRON]")
 	envOnce.Do(copyenv)
 	envLock.RLock()
 	defer envLock.RUnlock()

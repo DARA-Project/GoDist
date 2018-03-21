@@ -24,6 +24,8 @@ var useSyscallwd = func(error) bool { return true }
 // reached via multiple paths (due to symbolic links),
 // Getwd may return any one of them.
 func Getwd() (dir string, err error) {
+    // DARA Instrumentation
+    println("[GETWD]")
 	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return syscall.Getwd()
 	}

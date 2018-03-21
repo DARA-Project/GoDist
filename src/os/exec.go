@@ -68,10 +68,18 @@ type Signal interface {
 }
 
 // Getpid returns the process id of the caller.
-func Getpid() int { return syscall.Getpid() }
+func Getpid() int {
+    // DARA Instrumentation
+    println("[GETPID]")
+    return syscall.Getpid()
+}
 
 // Getppid returns the process id of the caller's parent.
-func Getppid() int { return syscall.Getppid() }
+func Getppid() int {
+    // DARA Instrumentation
+    println("[GETPPID]")
+    return syscall.Getppid()
+}
 
 // FindProcess looks for a running process by its pid.
 //
