@@ -37,10 +37,12 @@
 package os
 
 import (
+	"dara"
 	"errors"
 	"internal/poll"
 	"internal/testlog"
 	"io"
+	"runtime"
 	"syscall"
 	"time"
 )
@@ -214,6 +216,21 @@ func (f *File) WriteString(s string) (n int, err error) {
 func Mkdir(name string, perm FileMode) error {
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
 
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() {
+            print("[MKDIR] : ")
+		    print(name)
+		    print(" ")
+		    println(perm)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer : int(perm)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_MKDIR, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_MKDIR, syscallInfo)
+	}
 	if e != nil {
 		return &PathError{"mkdir", name, e}
 	}
@@ -229,6 +246,18 @@ func Mkdir(name string, perm FileMode) error {
 // Chdir changes the current working directory to the named directory.
 // If there is an error, it will be of type *PathError.
 func Chdir(dir string) error {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHDIR] : ")
+		    println(dir)
+        })
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], dir)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CHDIR, 1, 1, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHDIR, syscallInfo)
+	}
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory
 		return &PathError{"chdir", dir, e}

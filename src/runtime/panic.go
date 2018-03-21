@@ -8,6 +8,7 @@ import (
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
+    "dara"
 )
 
 // Calling panic with one of the errors below will call errorString.Error
@@ -551,6 +552,12 @@ func gopanic(e interface{}) {
 	atomic.Xadd(&runningPanicDefers, -1)
 
 	printpanics(gp._panic)
+    //DARA Inject. Log call to panic
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]dopanic : Inside panic now")})
+        LogCrash(procchan[DPid].Routines[int(gp.goid)])
+        endDara()
+    }
 	dopanic(0)       // should not return
 	*(*int)(nil) = 0 // not reached
 }
@@ -597,6 +604,7 @@ func dopanic(unused int) {
 	pc := getcallerpc()
 	sp := getcallersp(unsafe.Pointer(&unused))
 	gp := getg()
+
 	systemstack(func() {
 		dopanic_m(gp, pc, sp) // should never return
 	})
@@ -615,6 +623,11 @@ func throw(s string) {
 	if gp.m.throwing == 0 {
 		gp.m.throwing = 1
 	}
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]throw : Inside throw now")})
+        LogCrash(procchan[DPid].Routines[int(gp.goid)])
+        endDara()
+    }
 	startpanic()
 	dopanic(0)
 	*(*int)(nil) = 0 // not reached

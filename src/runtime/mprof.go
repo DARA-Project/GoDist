@@ -778,6 +778,8 @@ func saveg(pc, sp uintptr, gp *g, r *StackRecord) {
 // If all is true, Stack formats stack traces of all other goroutines
 // into buf after the trace for the current goroutine.
 func Stack(buf []byte, all bool) int {
+    //DARA Inject
+    print("Inside stack function\n")
 	if all {
 		stopTheWorld("stack trace")
 	}
@@ -789,6 +791,7 @@ func Stack(buf []byte, all bool) int {
 		pc := getcallerpc()
 		systemstack(func() {
 			g0 := getg()
+            println("Stack Pointer", g0.sched.sp)
 			// Force traceback=1 to override GOTRACEBACK setting,
 			// so that Stack's results are consistent.
 			// GOTRACEBACK is only about crash dumps.
