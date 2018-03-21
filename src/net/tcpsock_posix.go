@@ -8,8 +8,10 @@ package net
 
 import (
 	"context"
+	"dara"
 	"io"
 	"os"
+	"runtime"
 	"syscall"
 )
 
@@ -156,6 +158,18 @@ func (ln *TCPListener) file() (*os.File, error) {
 }
 
 func (sl *sysListener) listenTCP(ctx context.Context, laddr *TCPAddr) (*TCPListener, error) {
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		runtime.Dara_Debug_Print(func() { println("[LISTEN TCP]") })
+		argInfo1 := dara.GeneralType{Type: dara.CONTEXT, Unsupported: dara.UNSUPPORTEDVAL}
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], network)
+		argInfo3 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LISTEN_TCP, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LISTEN_TCP, syscallInfo)
+	}
 	fd, err := internetSocket(ctx, sl.network, laddr, nil, syscall.SOCK_STREAM, 0, "listen", sl.ListenConfig.Control)
 	if err != nil {
 		return nil, err

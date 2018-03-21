@@ -7,6 +7,7 @@
 package os
 
 import (
+	"dara"
 	"internal/poll"
 	"internal/syscall/unix"
 	"io"
@@ -34,6 +35,22 @@ func rename(oldname, newname string) error {
 			return &LinkError{"rename", oldname, newname, err}
 		}
 		return &LinkError{"rename", oldname, newname, syscall.EEXIST}
+	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[RENAME] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], oldname)
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], newname)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_RENAME, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_RENAME, syscallInfo)
 	}
 	err = syscall.Rename(oldname, newname)
 	if err != nil {
@@ -195,6 +212,24 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 		}
 	}
 
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[OPEN] : ")
+		    print(name + " ")
+		    print(flag)
+		    print(" ")
+		    println(perm)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: flag}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(perm)}
+		retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_OPEN, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_OPEN, syscallInfo)
+	}
 	var r int
 	for {
 		var e error
@@ -244,6 +279,18 @@ func (file *file) close() error {
 	if file.dirinfo != nil {
 		file.dirinfo.close()
 	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[CLOSE] : ")
+		    println(file.name)
+        })
+		argInfo := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo.String[:], file.name)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CLOSE, 1, 1, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CLOSE, syscallInfo)
+	}
 	var err error
 	if e := file.pfd.Close(); e != nil {
 		if e == poll.ErrFileClosing {
@@ -262,6 +309,20 @@ func (file *file) close() error {
 func (f *File) read(b []byte) (n int, err error) {
 	n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[READ] : ")
+		    println(f.file.name)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_READ, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READ, syscallInfo)
+	}
 	return n, err
 }
 
@@ -271,6 +332,23 @@ func (f *File) read(b []byte) (n int, err error) {
 func (f *File) pread(b []byte, off int64) (n int, err error) {
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[PREAD] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(off)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER64, Integer64: off}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_PREAD64, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PREAD64, syscallInfo)
+	}
 	return n, err
 }
 
@@ -279,12 +357,47 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 func (f *File) write(b []byte) (n int, err error) {
 	n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[WRITE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(string(b[:len(b)]))
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_WRITE, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_WRITE, syscallInfo)
+	}
 	return n, err
 }
 
 // pwrite writes len(b) bytes to the File starting at byte offset off.
 // It returns the number of bytes written and an error, if any.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
+    // DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[PWRITE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(string(b[:len(b)]))
+		    print(" ")
+		    println(off)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER64, Integer64: off}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_PWRITE64, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PWRITE64, syscallInfo)
+	}
 	n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
 	return n, err
@@ -297,6 +410,25 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 	ret, err = f.pfd.Seek(offset, whence)
 	runtime.KeepAlive(f)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[SEEK] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(offset)
+		    print(" ")
+		    println(whence)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: offset}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: whence}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER64, Integer64: ret}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LSEEK, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LSEEK, syscallInfo)
+	}
 	return ret, err
 }
 
@@ -304,6 +436,21 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 // If the file is a symbolic link, it changes the size of the link's target.
 // If there is an error, it will be of type *PathError.
 func Truncate(name string, size int64) error {
+    // DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[TRUNCATE] : ")
+		    print(name)
+		    print(" ")
+		    println(size)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: size}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_TRUNCATE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_TRUNCATE, syscallInfo)
+	}
 	if e := syscall.Truncate(name, size); e != nil {
 		return &PathError{"truncate", name, e}
 	}
@@ -316,7 +463,7 @@ func Remove(name string) error {
 	// System call interface forces us to know
 	// whether name is a file or directory.
 	// Try both: it is cheaper on average than
-	// doing a Stat plus the right one.
+	// doing a Stat plus the right one
 	e := syscall.Unlink(name)
 	if e == nil {
 		return nil
@@ -357,6 +504,22 @@ func tempDir() string {
 // If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {
 	e := syscall.Link(oldname, newname)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[LINK] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], oldname)
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], newname)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LINK, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LINK, syscallInfo)
+	}
 	if e != nil {
 		return &LinkError{"link", oldname, newname, e}
 	}
@@ -367,6 +530,22 @@ func Link(oldname, newname string) error {
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
 	e := syscall.Symlink(oldname, newname)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[LINK] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], oldname)
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], newname)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_SYMLINK, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SYMLINK, syscallInfo)
+	}
 	if e != nil {
 		return &LinkError{"symlink", oldname, newname, e}
 	}

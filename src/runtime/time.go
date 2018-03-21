@@ -9,6 +9,7 @@ package runtime
 import (
 	"internal/cpu"
 	"unsafe"
+    "dara"
 )
 
 // Package time knows the layout of this structure.
@@ -82,10 +83,16 @@ var faketime int64
 // timeSleep puts the current goroutine to sleep for at least ns nanoseconds.
 //go:linkname timeSleep time.Sleep
 func timeSleep(ns int64) {
+    //Dara injection
+    if Is_dara_profiling_on() {
+        Dara_Debug_Print(func() { println("[SLEEP]", ns) })
+        argInfo := dara.GeneralType{Type: dara.INTEGER64, Integer64: ns}
+        syscallInfo := dara.GeneralSyscall{dara.DSYS_SLEEP, 1, 0, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{}}
+        Report_Syscall_To_Scheduler(dara.DSYS_SLEEP, syscallInfo)
+    }
 	if ns <= 0 {
 		return
 	}
-
 	gp := getg()
 	t := gp.timer
 	if t == nil {
@@ -93,6 +100,18 @@ func timeSleep(ns int64) {
 		gp.timer = t
 	}
 	*t = timer{}
+    //Dara injection
+    if Replay || Explore {
+        dprint(dara.INFO, func () {println("[GoRoutine]timeSleep : Goroutine here for nap time")})
+        //Don't install the timer in replay but obtain the lock :)
+        tb := t.assignBucket()
+        lock(&tb.lock)
+        goparkunlock(&tb.lock, waitReasonSleep, traceEvGoSleep, 2)
+        return
+    }
+    if Replay || Explore{
+        dprint(dara.WARN, func () {println("[GoRuntime]timeSleep : We shouldn't be here wtf")})
+    }
 	t.when = nanotime() + ns
 	t.f = goroutineReady
 	t.arg = gp
@@ -125,6 +144,7 @@ func stopTimer(t *timer) bool {
 
 // Ready the goroutine arg.
 func goroutineReady(arg interface{}, seq uintptr) {
+    dprint(dara.INFO, func() {println("[GoRoutine]goroutineReady : Goroutine that woke up :", arg.(*g).goid)})
 	goready(arg.(*g), 0)
 }
 

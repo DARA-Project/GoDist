@@ -95,6 +95,8 @@ func reflect_memmove(to, from unsafe.Pointer, n uintptr) {
 // exported value for testing
 var hashLoad = float32(loadFactorNum) / float32(loadFactorDen)
 
+var randcounter uint32 = 0
+
 //go:nosplit
 func fastrand() uint32 {
 	mp := getg().m
@@ -103,6 +105,7 @@ func fastrand() uint32 {
 	// Xorshift paper: https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
 	// This generator passes the SmallCrush suite, part of TestU01 framework:
 	// http://simul.iro.umontreal.ca/testu01/tu01.html
+	
 	s1, s0 := mp.fastrand[0], mp.fastrand[1]
 	s1 ^= s1 << 17
 	s1 = s1 ^ s0 ^ s1>>7 ^ s0>>16
@@ -113,7 +116,12 @@ func fastrand() uint32 {
 //go:nosplit
 func fastrandn(n uint32) uint32 {
 	// This is similar to fastrand() % n, but faster.
-	// See https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+	// See http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+
+	/* REMOVE RANDOMNESS DARA
+	return uint32(uint64(fastrand()) * uint64(n) >> 32)
+	*/
+	randcounter++
 	return uint32(uint64(fastrand()) * uint64(n) >> 32)
 }
 

@@ -8,6 +8,8 @@ import (
 	"internal/race"
 	"sync/atomic"
 	"unsafe"
+    "dara"
+    "runtime"
 )
 
 // A WaitGroup waits for a collection of goroutines to finish.
@@ -51,6 +53,16 @@ func (wg *WaitGroup) state() (statep *uint64, semap *uint32) {
 // new Add calls must happen after all previous Wait calls have returned.
 // See the WaitGroup example.
 func (wg *WaitGroup) Add(delta int) {
+    if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+            print("[Wg.Add] : ")
+            print(wg)
+            println(delta)
+        })
+        argInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: delta}
+        syscallInfo := dara.GeneralSyscall{dara.WG_ADD, 1, 0, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{}}
+        runtime.Report_Syscall_To_Scheduler(dara.WG_ADD, syscallInfo)
+    }
 	statep, semap := wg.state()
 	if race.Enabled {
 		_ = *statep // trigger nil deref early
@@ -101,6 +113,14 @@ func (wg *WaitGroup) Done() {
 
 // Wait blocks until the WaitGroup counter is zero.
 func (wg *WaitGroup) Wait() {
+    if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+            print("[Wg.Wait] : ")
+            println(wg)
+        })
+        syscallInfo := dara.GeneralSyscall{dara.WG_WAIT, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+        runtime.Report_Syscall_To_Scheduler(dara.WG_WAIT, syscallInfo)
+    }
 	statep, semap := wg.state()
 	if race.Enabled {
 		_ = *statep // trigger nil deref early

@@ -8,6 +8,8 @@
 
 package syscall
 
+import "dara"
+import "runtime"
 import "sync"
 
 var (
@@ -65,10 +67,21 @@ func Unsetenv(key string) error {
 		delete(env, key)
 	}
 	unsetenv_c(key)
+	// DARA Instrumentation
+	if (runtime.Is_dara_profiling_on()) {
+		runtime.Dara_Debug_Print(func() { println("[UNSETENV] : " + key) })
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], key)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_UNSETENV, 1, 1, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_UNSETENV, syscallInfo)
+	}
 	return nil
 }
 
 func Getenv(key string) (value string, found bool) {
+	argInfo := dara.GeneralType{Type: dara.STRING}
+    copy(argInfo.String[:], key)
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return "", false
@@ -79,18 +92,54 @@ func Getenv(key string) (value string, found bool) {
 
 	i, ok := env[key]
 	if !ok {
+		// DARA Instrumentation
+		if (runtime.Is_dara_profiling_on()) {
+			runtime.Dara_Debug_Print(func() { println("[GETENV] : " + key) })
+			retInfo1 := dara.GeneralType{Type: dara.STRING}
+			retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETENV, syscallInfo)
+		}
 		return "", false
 	}
 	s := envs[i]
 	for i := 0; i < len(s); i++ {
 		if s[i] == '=' {
+			// DARA Instrumentation
+			if (runtime.Is_dara_profiling_on()) {
+				runtime.Dara_Debug_Print(func() {println("[GETENV] : " + key)})
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
+                copy(retInfo1.String[:], s[i+1:])
+				retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
+				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETENV, syscallInfo)
+			}
 			return s[i+1:], true
 		}
+	}
+	// DARA Instrumentation
+	if (runtime.Is_dara_profiling_on()) {
+		runtime.Dara_Debug_Print(func() { println("[GETENV] : " + key) })
+		retInfo1 := dara.GeneralType{Type: dara.STRING}
+		retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETENV, syscallInfo)
 	}
 	return "", false
 }
 
 func Setenv(key, value string) error {
+	// DARA Instrumentation
+	if (runtime.Is_dara_profiling_on()) {
+		runtime.Dara_Debug_Print(func() { println("[SETENV] : " + key +  " "  + value) })
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], key)
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], value)
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETENV, syscallInfo)
+	}
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return EINVAL
@@ -133,6 +182,12 @@ func Clearenv() {
 	}
 	env = make(map[string]int)
 	envs = []string{}
+	// DARA Instrumentation
+	if (runtime.Is_dara_profiling_on()) {
+		runtime.Dara_Debug_Print(func() { println("[CLEARENV]") })
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CLEARENV, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CLEARENV, syscallInfo)
+	}
 }
 
 func Environ() []string {
@@ -144,6 +199,13 @@ func Environ() []string {
 		if env != "" {
 			a = append(a, env)
 		}
+	}
+	// DARA Instrumentation
+	if (runtime.Is_dara_profiling_on()) {
+		runtime.Dara_Debug_Print(func() { println("[ENVIRON]") })
+		retInfo := dara.GeneralType{Type: dara.ARRAY, Integer: len(a)}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_ENVIRON, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_ENVIRON, syscallInfo)
 	}
 	return a
 }
