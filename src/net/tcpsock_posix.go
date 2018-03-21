@@ -153,6 +153,8 @@ func (ln *TCPListener) file() (*os.File, error) {
 }
 
 func listenTCP(ctx context.Context, network string, laddr *TCPAddr) (*TCPListener, error) {
+    // DARA Instrumentation
+    println("[LISTEN TCP]")
 	fd, err := internetSocket(ctx, network, laddr, nil, syscall.SOCK_STREAM, 0, "listen")
 	if err != nil {
 		return nil, err

@@ -534,6 +534,7 @@ var netprotos = map[int]*netproto{
 // These functions implement the usual BSD socket operations.
 
 func (f *netFile) bind(sa Sockaddr) error {
+    println("[BIND]")
 	if f.addr != nil {
 		return EISCONN
 	}
@@ -553,6 +554,7 @@ func (f *netFile) bind(sa Sockaddr) error {
 }
 
 func (f *netFile) listen(backlog int) error {
+    println("[LISTEN]")
 	net.Lock()
 	defer net.Unlock()
 	if f.listener != nil {
@@ -568,6 +570,7 @@ func (f *netFile) listen(backlog int) error {
 }
 
 func (f *netFile) accept() (fd int, sa Sockaddr, err error) {
+    println("[ACCEPT]")
 	msg, err := f.listener.read(f.readDeadline())
 	if err != nil {
 		return -1, nil, err
@@ -581,6 +584,7 @@ func (f *netFile) accept() (fd int, sa Sockaddr, err error) {
 }
 
 func (f *netFile) connect(sa Sockaddr) error {
+    println("[CONNECT]")
 	if past(f.writeDeadline()) {
 		return EAGAIN
 	}
@@ -638,6 +642,7 @@ func (f *netFile) connect(sa Sockaddr) error {
 }
 
 func (f *netFile) read(b []byte) (int, error) {
+    println("[NETFILE.READ]")
 	if f.rd == nil {
 		if f.raddr != nil {
 			n, _, err := f.recvfrom(b, 0)
@@ -649,6 +654,7 @@ func (f *netFile) read(b []byte) (int, error) {
 }
 
 func (f *netFile) write(b []byte) (int, error) {
+    println("[NETFILE.WRITE]")
 	if f.wr == nil {
 		if f.raddr != nil {
 			err := f.sendto(b, 0, f.raddr)
@@ -669,6 +675,7 @@ type pktmsg struct {
 }
 
 func (f *netFile) recvfrom(p []byte, flags int) (n int, from Sockaddr, err error) {
+    println("[RECVFROM]")
 	if f.sotype != SOCK_DGRAM {
 		return 0, nil, EINVAL
 	}
@@ -687,6 +694,7 @@ func (f *netFile) recvfrom(p []byte, flags int) (n int, from Sockaddr, err error
 }
 
 func (f *netFile) sendto(p []byte, flags int, to Sockaddr) error {
+    println("[SENDTO]")
 	if f.sotype != SOCK_DGRAM {
 		return EINVAL
 	}
@@ -767,6 +775,10 @@ func Socket(proto, sotype, unused int) (fd int, err error) {
 }
 
 func Bind(fd int, sa Sockaddr) error {
+    // DARA Instrumentation
+    print("[BIND] : ")
+    print(fd)
+    print(" ")
 	f, err := fdToNetFile(fd)
 	if err != nil {
 		return err
@@ -784,6 +796,11 @@ func StopIO(fd int) error {
 }
 
 func Listen(fd int, backlog int) error {
+    // DARA Instrumentation
+    print("[LISTEN] : ")
+    print(fd)
+    print(" ")
+    print(backlog)
 	f, err := fdToNetFile(fd)
 	if err != nil {
 		return err
