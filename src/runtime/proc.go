@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -9,6 +10,7 @@ import (
 	"runtime/internal/sys"
 	"unsafe"
 )
+
 
 var buildVersion = sys.TheVersion
 
@@ -158,6 +160,7 @@ func main() {
 	// because nanotime on some platforms depends on startNano.
 	runtimeInitTime = nanotime()
 
+
 	gcenable()
 
 	main_init_done = make(chan bool)
@@ -183,6 +186,8 @@ func main() {
 	}
 
 	fn := main_init // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
+
+
 	fn()
 	close(main_init_done)
 
@@ -195,10 +200,19 @@ func main() {
 		return
 	}
 	fn = main_main // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
+	//DARA INJET
+		ProcCounter = 0
+		LastProc = -1
+		LastProcCounter = 0
+		ProcInit = true
+		RunIndex = 0
+		ScheduleIndex = 0
+	//\DARA INJECT
 	fn()
 	if raceenabled {
 		racefini()
 	}
+
 
 	// Make racy client program work: if panicking on
 	// another goroutine at the same time as main returns,
@@ -222,6 +236,7 @@ func main() {
 		var x *int32
 		*x = 0
 	}
+	print("EXIT\n\n")
 }
 
 // os_beforeExit is called from os.Exit(0).
@@ -464,7 +479,6 @@ const (
 // The bootstrap sequence is:
 //
 //	call osinit
-//	call schedinit
 //	make & queue new G
 //	call runtime·mstart
 //
@@ -2222,6 +2236,7 @@ top:
 
 	// local runq
 	if gp, inheritTime := runqget(_p_); gp != nil {
+		print("Returning local\n")
 		return gp, inheritTime
 	}
 
@@ -2550,8 +2565,255 @@ top:
 		goto top
 	}
 
+	gp = getScheduledGp(gp)
+
 	execute(gp, inheritTime)
 }
+
+func getScheduledGp(gp *g) *g {
+	//DARA TEST
+	if ProcInit {
+		ProcID, ProcOk = procLookup(gp)
+		if !ProcOk {
+			procWrite(gp)
+			ProcID, ProcOk = procLookup(gp)
+		}
+		if LastProc == ProcID {
+			LastProcCounter++
+		} else {
+			//print("[ID:",ProcID,"\tGoPC:",gp.gopc,",\tsched count:",LastProcCounter, "\n")
+			LastProc = ProcID
+			LastProcCounter = 0
+		}
+		//print("Schedule(",ProcID,",",gp.gop,c")\n")
+
+
+		//if gcBlackenEnabled != 0 { //this check is to prevent the garbage collector from screwing up
+		if gogetenv("DARAPROGRAM") != "" {
+			/*
+			for {
+				print("Searching for goroutine [ID:",Replay[ScheduleIndex].Id," PC:",Replay[ScheduleIndex].Pc,"]\n")
+				print("Found Routine           [ID:",ProcID," PC:",gp.gopc,"]\n")
+				if Replay[ScheduleIndex].Id == ProcID { //&& Replay[ScheduleIndex].Pc == gp.gopc {
+					print("Found Routine to Schedule!\n")
+					ScheduleIndex++
+					//ReleaseProcs()
+					break
+				} else {
+					//casgstatus(gp,readgstatus(gp),_Gwaiting)
+					//ready(gp, 0, true)
+					//procWrite(gp)
+					gp, inheritTime = findrunnable()
+					//gp was ready, mark it as ready again, so that it can be
+					//run more
+				}
+			}*/
+			var i int
+			for i = 0; i < len(allgs); i++ {
+				gp = allgs[i]
+				//print("Searching for goroutine [ID:",Replay[ScheduleIndex].Id," PC:",Replay[ScheduleIndex].Pc,"]\n")
+				//print("Found Routine           [ID:",gp.goid," PC:",gp.gopc,"]\n")
+				if Replay[ScheduleIndex].Id == gp.goid { //&& Replay[ScheduleIndex].Pc == gp.gopc {
+					//print("Found Routine to Schedule!\n")
+					ScheduleIndex++
+					//print("(",ProcID,",",gp.gopc,")\n")
+					print("\tSchedule {\n")
+					print("\t\tId: ",gp.goid,",\n")
+					print("\t\tPc: ",gp.gopc,",\n")
+					print("\t},\n")
+					break
+				} 
+			}
+		}
+		//}
+		/*
+		RunIndex = (RunIndex + 1) % int64(ProcCounter)
+		gp = ProcArr[RunQueue[RunIndex]]
+		print("Running: ",RunIndex,"\n")
+		for gp.atomicstatus != _Grunnable {
+			RunIndex = (RunIndex + 1) % int64(ProcCounter)
+			gp = ProcArr[RunQueue[RunIndex]]
+			print("Running: ",RunIndex,"\n")
+		}*/
+
+		//print("\nID: ", gp.goid,"\n")
+	}
+	return gp
+}
+
+
+func procLookup(gp *g) (int64, bool) {
+
+	if gp.goid > int64(len(ProcArr)) || gp.goid < 0 {
+		//Out of range id
+		//print("out of range lookup\n")
+		return -2, false
+	}
+	if ProcArr[gp.goid] == nil {
+		//print("gp lookup is nil\n")
+		return -1, false
+	}
+	if ProcArr[gp.goid] == gp {
+		return gp.goid, true
+	} 
+	//print("gp pointer compairison failed\n")
+	return -3, false
+}
+
+//go:yeswritebarrierrec
+func procWrite(gp *g) {
+	if gp.goid > int64(len(ProcArr)) || gp.goid < 0 {
+		//Out of range id
+		return
+	}
+	ProcArr[gp.goid] = gp
+	RunQueue[ProcCounter] = gp.goid
+	ProcCounter++
+	return
+}
+
+//go:yeswritebarrierrec
+func ReleaseProcs() {
+	var i int
+	for i = range ProcArr {
+		if ProcArr[i] != nil {
+			casgstatus(ProcArr[i],readgstatus(ProcArr[i]),_Gwaiting)
+			ready(ProcArr[i], 0, true)
+			ProcArr[i] = nil
+		}
+	}
+}
+
+
+const PROC_SIZE = 4096
+
+var (
+	ProcInit bool
+	ProcCounter int
+	LastProc int64
+	LastProcCounter int
+	ProcID int64
+	ProcOk bool
+	ProcArr [PROC_SIZE]*g
+	RunQueue [PROC_SIZE]int64
+	RunIndex int64
+	ScheduleIndex int
+	DaraProgram string
+)
+
+type Schedule struct {
+	Id int64
+	Pc uintptr
+}
+
+var Replay = []Schedule{
+	Schedule {
+		Id: 13,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 2,
+		Pc: 4339541,
+	},
+	Schedule {
+		Id: 4,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 5,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 6,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 7,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 8,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 9,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 11,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 10,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 12,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 1,
+		Pc: 4480019,
+	},
+	Schedule {
+		Id: 13,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 4,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 5,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 6,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 8,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 9,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 7,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 10,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 11,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 12,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 1,
+		Pc: 4480019,
+	},
+	Schedule {
+		Id: 13,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 4,
+		Pc: 4512926,
+	},
+	Schedule {
+		Id: 5,
+		Pc: 4512926,
+	},
+}
+
+
 
 // dropg removes the association between m and the current goroutine m->curg (gp for short).
 // Typically a caller sets gp's status away from Grunning and then
