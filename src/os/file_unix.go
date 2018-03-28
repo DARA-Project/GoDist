@@ -168,11 +168,13 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 	}
 
     // DARA Instrumentation
-    print("[OPEN] : ")
-    print(name + " ")
-    print(flag)
-    print(" ")
-    println(perm)
+    if Is_dara_profiling_on() {
+        print("[OPEN] : ")
+        print(name + " ")
+        print(flag)
+        print(" ")
+        println(perm)
+    }
 	var r int
 	for {
 		var e error
@@ -219,8 +221,10 @@ func (file *file) close() error {
 		return syscall.EINVAL
 	}
     // DARA Instrumentation
-    print("[CLOSE] : ")
-    println(file.name)
+    if Is_dara_profiling_on() {
+        print("[CLOSE] : ")
+        println(file.name)
+    }
 	var err error
 	if e := file.pfd.Close(); e != nil {
 		if e == poll.ErrFileClosing {
@@ -238,9 +242,11 @@ func (file *file) close() error {
 // It returns the number of bytes read and an error, if any.
 func (f *File) read(b []byte) (n int, err error) {
     // DARA Instrumentation
-    print("[READ] : ")
-    println(f.file.name)
-	n, err = f.pfd.Read(b)
+    if Is_dara_profiling_on() {
+        print("[READ] : ")
+        println(f.file.name)
+    }
+    n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
 	return n, err
 }
@@ -250,10 +256,12 @@ func (f *File) read(b []byte) (n int, err error) {
 // EOF is signaled by a zero count with err set to nil.
 func (f *File) pread(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    print("[PREAD] : ")
-    print(f.file.name)
-    print(" ")
-    println(off)
+    if Is_dara_profiling_on() {
+        print("[PREAD] : ")
+        print(f.file.name)
+        print(" ")
+        println(off)
+    }
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
 	return n, err
@@ -263,11 +271,13 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) write(b []byte) (n int, err error) {
     // DARA Instrumentation
-    print("[WRITE] : ")
-    print(f.file.name)
-    print(" ")
-    println(string(b[:len(b)]))
-	n, err = f.pfd.Write(b)
+    if Is_dara_profiling_on() {
+        print("[WRITE] : ")
+        print(f.file.name)
+        print(" ")
+        println(string(b[:len(b)]))
+	}
+    n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
 	return n, err
 }
@@ -276,13 +286,15 @@ func (f *File) write(b []byte) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    print("[WRITE] : ")
-    print(f.file.name)
-    print(" ")
-    print(string(b[:len(b)]))
-    print(" ")
-    print(off)
-	n, err = f.pfd.Pwrite(b, off)
+    if Is_dara_profiling_on() {
+        print("[PWRITE] : ")
+        print(f.file.name)
+        print(" ")
+        print(string(b[:len(b)]))
+        print(" ")
+        print(off)
+	}
+    n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
 	return n, err
 }
@@ -293,13 +305,15 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 // It returns the new offset and an error, if any.
 func (f *File) seek(offset int64, whence int) (ret int64, err error) {
     // DARA Instrumentation
-    print("[SEEK] : ")
-    print(f.file.name)
-    print(" ")
-    print(offset)
-    print(" ")
-    println(whence)
-	ret, err = f.pfd.Seek(offset, whence)
+    if Is_dara_profiling_on() {
+        print("[SEEK] : ")
+        print(f.file.name)
+        print(" ")
+        print(offset)
+        print(" ")
+        println(whence)
+	}
+    ret, err = f.pfd.Seek(offset, whence)
 	runtime.KeepAlive(f)
 	return ret, err
 }
@@ -309,10 +323,12 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 // If there is an error, it will be of type *PathError.
 func Truncate(name string, size int64) error {
     // DARA Instrumentation
-    print("[TRUNCATE] : ")
-    print(name)
-    print(" ")
-    println(size)
+    if Is_dara_profiling_on() {
+        print("[TRUNCATE] : ")
+        print(name)
+        print(" ")
+        println(size)
+    }
 	if e := syscall.Truncate(name, size); e != nil {
 		return &PathError{"truncate", name, e}
 	}
@@ -327,14 +343,18 @@ func Remove(name string) error {
 	// Try both: it is cheaper on average than
 	// doing a Stat plus the right one
     // DARA Instrumentation
-    println("[REMOVE]")
-    println("\t[UNLINK] : " + name)
+    if Is_dara_profiling_on() {
+        println("[REMOVE]")
+        println("\t[UNLINK] : " + name)
+    }
 	e := syscall.Unlink(name)
 	if e == nil {
 		return nil
 	}
-    println("\t[RMDIR] : " + name)
-	e1 := syscall.Rmdir(name)
+    if Is_dara_profiling_on() {
+        println("\t[RMDIR] : " + name)
+	}
+    e1 := syscall.Rmdir(name)
 	if e1 == nil {
 		return nil
 	}
@@ -370,10 +390,12 @@ func tempDir() string {
 // If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {
     // DARA Instrumentation
-    print("[LINK] : ")
-    print(oldname)
-    print(" ")
-    println(newname)
+    if Is_dara_profiling_on() {
+        print("[LINK] : ")
+        print(oldname)
+        print(" ")
+        println(newname)
+    }
 	e := syscall.Link(oldname, newname)
 	if e != nil {
 		return &LinkError{"link", oldname, newname, e}
@@ -385,10 +407,12 @@ func Link(oldname, newname string) error {
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
     // DARA Instrumentation
-    print("[SYMLINK] : ")
-    print(oldname)
-    print(" ")
-    println(newname)
+    if Is_dara_profiling_on() {
+        print("[SYMLINK] : ")
+        print(oldname)
+        print(" ")
+        println(newname)
+    }
 	e := syscall.Symlink(oldname, newname)
 	if e != nil {
 		return &LinkError{"symlink", oldname, newname, e}

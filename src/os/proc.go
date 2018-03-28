@@ -29,7 +29,9 @@ func runtime_args() []string // in package runtime
 // On Windows, it returns -1.
 func Getuid() int {
     // DARA Instrumentation
-    println("[GETUID]")
+    if Is_dara_profiling_on() {
+        println("[GETUID]")
+    }
     return syscall.Getuid()
 }
 
@@ -38,7 +40,9 @@ func Getuid() int {
 // On Windows, it returns -1.
 func Geteuid() int {
     // DARA Instrumentation
-    println("[GETEUID]")
+    if Is_dara_profiling_on() {
+        println("[GETEUID]")
+    }
     return syscall.Geteuid()
 }
 
@@ -47,7 +51,9 @@ func Geteuid() int {
 // On Windows, it returns -1.
 func Getgid() int {
     // DARA Instrumentation
-    println("[GETGID]")
+    if Is_dara_profiling_on() {
+        println("[GETGID]")
+    }
     return syscall.Getgid()
 }
 
@@ -56,7 +62,9 @@ func Getgid() int {
 // On Windows, it returns -1.
 func Getegid() int {
     // DARA Instrumentation
-    println("[GETEGID]")
+    if Is_dara_profiling_on() {
+        println("[GETEGID]")
+    }
     return syscall.Getegid()
 }
 
@@ -66,7 +74,9 @@ func Getegid() int {
 // for a possible alternative.
 func Getgroups() ([]int, error) {
     // DARA Instrumentation
-    println("[GETGROUPS]")
+    if Is_dara_profiling_on() {
+        println("[GETGROUPS]")
+    }
 	gids, e := syscall.Getgroups()
 	return gids, NewSyscallError("getgroups", e)
 }
@@ -75,8 +85,10 @@ func Getgroups() ([]int, error) {
 // Conventionally, code zero indicates success, non-zero an error.
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
-    print("[EXIT] : ")
-    println(code)
+    if Is_dara_profiling_on() {
+        print("[EXIT] : ")
+        println(code)
+    }
 	if code == 0 {
 		// Give race detector a chance to fail the program.
 		// Racy programs do not have the right to finish successfully.

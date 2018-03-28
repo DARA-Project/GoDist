@@ -25,7 +25,9 @@ var useSyscallwd = func(error) bool { return true }
 // Getwd may return any one of them.
 func Getwd() (dir string, err error) {
     // DARA Instrumentation
-    println("[GETWD]")
+    if Is_dara_profiling_on() {
+        println("[GETWD]")
+    }
 	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return syscall.Getwd()
 	}

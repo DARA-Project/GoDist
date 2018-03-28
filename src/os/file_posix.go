@@ -17,8 +17,10 @@ func sigpipe() // implemented in package runtime
 // If there is an error, it will be of type *PathError.
 func Readlink(name string) (string, error) {
     // DARA Instrumentation
-    print("[READLINK] : ")
-    println(name)
+    if Is_dara_profiling_on() {
+        print("[READLINK] : ")
+        println(name)
+    }
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
 		n, e := fixCount(syscall.Readlink(fixLongPath(name), b))
@@ -50,10 +52,12 @@ func syscallMode(i FileMode) (o uint32) {
 // See docs in file.go:Chmod.
 func chmod(name string, mode FileMode) error {
     // DARA Instrumentation
-    print("[CHMOD] : ")
-    print(name)
-    print(" ")
-    println(mode)
+    if Is_dara_profiling_on() {
+        print("[CHMOD] : ")
+        print(name)
+        print(" ")
+        println(mode)
+    }
 	if e := syscall.Chmod(fixLongPath(name), syscallMode(mode)); e != nil {
 		return &PathError{"chmod", name, e}
 	}
@@ -63,10 +67,12 @@ func chmod(name string, mode FileMode) error {
 // See docs in file.go:(*File).Chmod.
 func (f *File) chmod(mode FileMode) error {
     // DARA Instrumentation
-    print("[FCHMOD] : ")
-    print(f.file.name)
-    print(" ")
-    println(mode)
+    if Is_dara_profiling_on() {
+        print("[FCHMOD] : ")
+        print(f.file.name)
+        print(" ")
+        println(mode)
+    }
 	if err := f.checkValid("chmod"); err != nil {
 		return err
 	}
@@ -84,12 +90,14 @@ func (f *File) chmod(mode FileMode) error {
 // in *PathError.
 func Chown(name string, uid, gid int) error {
     // DARA Instrumentation
-    print("[CHOWN] : ")
-    print(name)
-    print(" ")
-    print(uid)
-    print(" ")
-    println(gid)
+    if Is_dara_profiling_on() {
+        print("[CHOWN] : ")
+        print(name)
+        print(" ")
+        print(uid)
+        print(" ")
+        println(gid)
+    }
 	if e := syscall.Chown(name, uid, gid); e != nil {
 		return &PathError{"chown", name, e}
 	}
@@ -104,12 +112,14 @@ func Chown(name string, uid, gid int) error {
 // in *PathError.
 func Lchown(name string, uid, gid int) error {
     // DARA Instrumentation
-    print("[LCHOWN] : ")
-    print(name)
-    print(" ")
-    print(uid)
-    print(" ")
-    println(gid)
+    if Is_dara_profiling_on() {
+        print("[LCHOWN] : ")
+        print(name)
+        print(" ")
+        print(uid)
+        print(" ")
+        println(gid)
+    }
 	if e := syscall.Lchown(name, uid, gid); e != nil {
 		return &PathError{"lchown", name, e}
 	}
@@ -123,12 +133,14 @@ func Lchown(name string, uid, gid int) error {
 // in *PathError.
 func (f *File) Chown(uid, gid int) error {
     // DARA Instrumentation
-    print("[FCHOWN] : ")
-    print(f.file.name)
-    print(" ")
-    print(uid)
-    print(" ")
-    println(gid)
+    if Is_dara_profiling_on() {
+        print("[FCHOWN] : ")
+        print(f.file.name)
+        print(" ")
+        print(uid)
+        print(" ")
+        println(gid)
+    }
 	if err := f.checkValid("chown"); err != nil {
 		return err
 	}
@@ -143,10 +155,12 @@ func (f *File) Chown(uid, gid int) error {
 // If there is an error, it will be of type *PathError.
 func (f *File) Truncate(size int64) error {
     // DARA Instrumentation
-    print("[FTRUNCATE] : ")
-    print(f.file.name)
-    print(" ")
-    print(size)
+    if Is_dara_profiling_on() {
+        print("[FTRUNCATE] : ")
+        print(f.file.name)
+        print(" ")
+        print(size)
+    }
 	if err := f.checkValid("truncate"); err != nil {
 		return err
 	}
@@ -161,8 +175,10 @@ func (f *File) Truncate(size int64) error {
 // of recently written data to disk.
 func (f *File) Sync() error {
     // DARA Instrumentation
-    print("[FSYNC] : ")
-    println(f.file.name)
+    if Is_dara_profiling_on() {
+        print("[FSYNC] : ")
+        println(f.file.name)
+    }
 	if err := f.checkValid("sync"); err != nil {
 		return err
 	}
@@ -180,12 +196,14 @@ func (f *File) Sync() error {
 // If there is an error, it will be of type *PathError.
 func Chtimes(name string, atime time.Time, mtime time.Time) error {
     // DARA Instrumentation
-    print("[CHTIMES] : ")
-    print(name)
-    print(" ")
-    print(atime.String())
-    print(" ")
-    println(mtime.String())
+    if Is_dara_profiling_on() {
+        print("[CHTIMES] : ")
+        print(name)
+        print(" ")
+        print(atime.String())
+        print(" ")
+        println(mtime.String())
+    }
 	var utimes [2]syscall.Timespec
 	utimes[0] = syscall.NsecToTimespec(atime.UnixNano())
 	utimes[1] = syscall.NsecToTimespec(mtime.UnixNano())
@@ -200,8 +218,10 @@ func Chtimes(name string, atime time.Time, mtime time.Time) error {
 // If there is an error, it will be of type *PathError.
 func (f *File) Chdir() error {
     // DARA Instrumentation
-    print("[FCHDIR] : ")
-    println(f.file.name)
+    if Is_dara_profiling_on() {
+        print("[FCHDIR] : ")
+        println(f.file.name)
+    }
 	if err := f.checkValid("chdir"); err != nil {
 		return err
 	}
@@ -214,10 +234,12 @@ func (f *File) Chdir() error {
 // setDeadline sets the read and write deadline.
 func (f *File) setDeadline(t time.Time) error {
     // DARA Instrumentation
-    print("[SetDeadline] : ")
-    print(f.file.name)
-    print(" ")
-    print(t.String())
+    if Is_dara_profiling_on() {
+        print("[SetDeadline] : ")
+        print(f.file.name)
+        print(" ")
+        print(t.String())
+    }
 	if err := f.checkValid("SetDeadline"); err != nil {
 		return err
 	}
@@ -227,10 +249,12 @@ func (f *File) setDeadline(t time.Time) error {
 // setReadDeadline sets the read deadline.
 func (f *File) setReadDeadline(t time.Time) error {
     // DARA Instrumentation
-    print("[SetReadDeadline] : ")
-    print(f.file.name)
-    print(" ")
-    print(t.String())
+    if Is_dara_profiling_on() {
+        print("[SetReadDeadline] : ")
+        print(f.file.name)
+        print(" ")
+        print(t.String())
+    }
 	if err := f.checkValid("SetReadDeadline"); err != nil {
 		return err
 	}
@@ -240,10 +264,12 @@ func (f *File) setReadDeadline(t time.Time) error {
 // setWriteDeadline sets the write deadline.
 func (f *File) setWriteDeadline(t time.Time) error {
     // DARA Instrumentation
-    print("[SetWriteDeadline] : ")
-    print(f.file.name)
-    print(" ")
-    print(t.String())
+    if Is_dara_profiling_on() {
+        print("[SetWriteDeadline] : ")
+        print(f.file.name)
+        print(" ")
+        print(t.String())
+    }
 	if err := f.checkValid("SetWriteDeadline"); err != nil {
 		return err
 	}

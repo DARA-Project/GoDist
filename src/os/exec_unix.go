@@ -36,8 +36,10 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 	var status syscall.WaitStatus
 	var rusage syscall.Rusage
     // DARA Instrumentation
-    print("[WAIT] : ")
-    println(p.Pid)
+    if Is_dara_profiling_on() {
+        print("[WAIT] : ")
+        println(p.Pid)
+    }
 	pid1, e := syscall.Wait4(p.Pid, &status, 0, &rusage)
 	if e != nil {
 		return nil, NewSyscallError("wait", e)
@@ -72,10 +74,12 @@ func (p *Process) signal(sig Signal) error {
 		return errors.New("os: unsupported signal type")
 	}
     // DARA Instrumentation
-    print("[KILL] : ")
-    print(p.Pid)
-    print(" ")
-    println(s.String())
+    if Is_dara_profiling_on() {
+        print("[KILL] : ")
+        print(p.Pid)
+        print(" ")
+        println(s.String())
+    }
 	if e := syscall.Kill(p.Pid, s); e != nil {
 		if e == syscall.ESRCH {
 			return errFinished

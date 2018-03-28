@@ -19,6 +19,8 @@ package os
 // Executable is not supported on nacl.
 func Executable() (string, error) {
     // DARA Instrumentation
-    println("[EXECUTABLE]")
+    if Is_dara_profiling_on() {
+        println("[EXECUTABLE]")
+    }
 	return executable()
 }

@@ -213,10 +213,12 @@ func (f *File) WriteString(s string) (n int, err error) {
 // If there is an error, it will be of type *PathError.
 func Mkdir(name string, perm FileMode) error {
     // DARA Instrumentation
-    print("[MKDIR] : ")
-    print(name)
-    print(" ")
-    println(perm)
+    if Is_dara_profiling_on() {
+        print("[MKDIR] : ")
+        print(name)
+        print(" ")
+        println(perm)
+    }
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
 
 	if e != nil {
@@ -235,8 +237,10 @@ func Mkdir(name string, perm FileMode) error {
 // If there is an error, it will be of type *PathError.
 func Chdir(dir string) error {
     // DARA Instrumentation
-    print("[CHDIR] : ")
-    println(dir)
+    if Is_dara_profiling_on() {
+        print("[CHDIR] : ")
+        println(dir)
+    }
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory
 		return &PathError{"chdir", dir, e}

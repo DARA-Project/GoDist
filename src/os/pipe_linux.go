@@ -11,7 +11,9 @@ import "syscall"
 func Pipe() (r *File, w *File, err error) {
 	var p [2]int
     // DARA Instrumentation
-    println("[PIPE]")
+    if Is_dara_profiling_on() {
+        println("[PIPE]")
+    }
 	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	// pipe2 was added in 2.6.27 and our minimum requirement is 2.6.23, so it
 	// might not be implemented.
