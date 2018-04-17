@@ -201,12 +201,9 @@ func main() {
 	}
 	fn = main_main // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
 	//DARA INJET
-		ProcCounter = 0
-		LastProc = -1
-		LastProcCounter = 0
-		ProcInit = true
-		RunIndex = 0
-		ScheduleIndex = 0
+	if gogetenv("DARAON") == "true" {
+		initDara()
+	}
 	//\DARA INJECT
 	fn()
 	if raceenabled {
@@ -2207,6 +2204,8 @@ func execute(gp *g, inheritTime bool) {
 	gogo(&gp.sched)
 }
 
+
+
 // Finds a runnable goroutine to execute.
 // Tries to steal from other P's, get g from global queue, poll network.
 func findrunnable() (gp *g, inheritTime bool) {
@@ -2236,7 +2235,6 @@ top:
 
 	// local runq
 	if gp, inheritTime := runqget(_p_); gp != nil {
-		print("Returning local\n")
 		return gp, inheritTime
 	}
 
@@ -2551,6 +2549,8 @@ top:
 		gp, inheritTime = findrunnable() // blocks until work is available
 	}
 
+	gp = getScheduledGp(gp)
+
 	// This thread is going to run a goroutine and is not spinning anymore,
 	// so if it was marked as spinning we need to reset it now and potentially
 	// start a new spinning M.
@@ -2565,79 +2565,205 @@ top:
 		goto top
 	}
 
-	gp = getScheduledGp(gp)
 
 	execute(gp, inheritTime)
 }
 
+//DARA Specific consts
+const (
+	_MAP_SHARED = 0x01 // used for mmap (not defined in linux defs)
+	CHANNELS = 5 //TODO should be the same as procs
+	DARAFD = 666
+	UNLOCKED = 0
+	LOCKED = 1
+	SCHEDLEN = 1000000000
+	PROCS = 3
+	MAXGOROUTINES = 4096
+
+	PAGESIZE = 4096
+	SHAREDMEMPAGES = 65536
+)
+
+type DaraProc struct {
+	Lock uint32 //in the global scheduler this is an int32 due to differences in the atomic libraries
+	Run int
+	Routines [MAXGOROUTINES]RoutineInfo
+}
+
+type RoutineInfo struct {
+	Status uint32
+}
+
+var (
+	smptr unsafe.Pointer //unsafe shared memory pointer
+	err int
+	procchan *[CHANNELS]DaraProc
+)
+
+func initDara() {
+	ProcCounter = 0
+	LastProc = -1
+	LastProcCounter = 0
+	ProcInit = true
+	RunIndex = 0
+	ScheduleIndex = 0
+	smptr , err = mmap(nil,SHAREDMEMPAGES*PAGESIZE,_PROT_READ|_PROT_WRITE ,_MAP_SHARED,DARAFD,0)
+	switch err {
+		case _EINTR:
+			print("EINR\n")
+		case _EAGAIN:
+			print("EAGAIN\n")
+		case _ENOMEM:
+			print("ENOMEM\n")
+		default:
+			print("Unknown Error")
+	}
+	Running = false
+	procchan = (*[CHANNELS]DaraProc)(smptr)
+
+
+	if pid, ok := atoi32(gogetenv("DARAPID")); ok {
+		DPid = int(pid)
+	} else {
+		panic("DARA turned on but DARAPID not set")
+	}
+}
+
+
+//go:yeswritebarrierrec
 func getScheduledGp(gp *g) *g {
-	//DARA TEST
+
 	if ProcInit {
-		ProcID, ProcOk = procLookup(gp)
-		if !ProcOk {
-			procWrite(gp)
-			ProcID, ProcOk = procLookup(gp)
+		var i int
+		for i = 0; i < len(allgs); i++ {
+			procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
 		}
-		if LastProc == ProcID {
-			LastProcCounter++
-		} else {
-			//print("[ID:",ProcID,"\tGoPC:",gp.gopc,",\tsched count:",LastProcCounter, "\n")
-			LastProc = ProcID
-			LastProcCounter = 0
+
+		//casgstatus(gp,readgstatus(gp),_Gwaiting) //set g status to
+		//waiting (used for reference)
+		if Running {
+			//report updates to state and unlock variable TODO this
+			//must be more expressive
+			if procchan[DPid].Run == -3 {
+				//This is the record state
+				procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+			} else {
+				//this is the replay state
+				procchan[DPid].Run = -1
+			}
+			//Unlock
+			Running = false
+			atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
+			//print("Unlocking")
 		}
-		//print("Schedule(",ProcID,",",gp.gop,c")\n")
+		//wait for the global scheduler
+		for {
+			if atomic.Cas(&(procchan[DPid].Lock),UNLOCKED,LOCKED) { //TODO use scheduler shared mem
+				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
+					if procchan[DPid].Run == -2 {
+						//first instance
+						//print("\nfirst instance\n")
+						Running = true
+						return gp
+					}
+
+					if procchan[DPid].Run == -3 {
+						//Record mode, let the goruntime do whatever
+						//it wants and report back to the CS
+						RunningGoid = gp.goid
+						Record = true
+						Running = true
+						return gp
+					}
+					if Record {
+						atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
+						continue
+					}
+
+					//print("Never During Record")
+					//print(procchan[DPid].Run)
+					_g_ := getg()
+					_p_ := _g_.m.p.ptr()
+					var gpcounter int = 0
+					//Set the ProcArr to nil, this will prevent stale
+					//g from last run
+					for i := 0; i<len(ProcArr);i++ {
+						ProcArr[i] = nil
+					}
+					//Pop all g's off of the local runq
+					for gpl, _ := runqget(_p_); gpl != nil; gpl, _ = runqget(_p_) {
+						//write gp to a list
+						ProcArr[gpcounter] = gpl
+						gpcounter++
+					}
+					for gpl := globrunqget(_p_,0); gpl != nil; gpl = globrunqget(_p_,0) {
+						ProcArr[gpcounter] = gpl
+						gpcounter++
+						//write gp to a list
+					}
+					//TODO itterate over list and choose gp
+					for i := 0;i<gpcounter; i++ {
+						if ProcArr[i].goid == int64(procchan[DPid].Run) {
+							print("HITHITHIT ")
+							gp = ProcArr[i]
+						}
+					}
+					//Put gp's back onto the runq
+					for i := 0;i<gpcounter; i++ {
+						//dont put the scheduled gp back onto the
+						//runq
+						if ProcArr[i] == gp {
+							continue
+						}
+						globrunqput(ProcArr[i])
+					}
 
 
-		//if gcBlackenEnabled != 0 { //this check is to prevent the garbage collector from screwing up
-		if gogetenv("DARAPROGRAM") != "" {
-			/*
-			for {
-				print("Searching for goroutine [ID:",Replay[ScheduleIndex].Id," PC:",Replay[ScheduleIndex].Pc,"]\n")
-				print("Found Routine           [ID:",ProcID," PC:",gp.gopc,"]\n")
-				if Replay[ScheduleIndex].Id == ProcID { //&& Replay[ScheduleIndex].Pc == gp.gopc {
-					print("Found Routine to Schedule!\n")
-					ScheduleIndex++
-					//ReleaseProcs()
-					break
-				} else {
-					//casgstatus(gp,readgstatus(gp),_Gwaiting)
-					//ready(gp, 0, true)
-					//procWrite(gp)
-					gp, inheritTime = findrunnable()
-					//gp was ready, mark it as ready again, so that it can be
-					//run more
+
+					//Run whichever goroutine was passed in
+					//print("returning gp")
+					Running=true //TODO REMOVE ERROR
+					return gp
+					//TODO read the state of all runnalbe go routines
+					//TODO update shared memory table for each goroutine
+					//TODO send message to Scheduler, that goroutine has
+					//run
 				}
-			}*/
-			var i int
-			for i = 0; i < len(allgs); i++ {
-				gp = allgs[i]
-				//print("Searching for goroutine [ID:",Replay[ScheduleIndex].Id," PC:",Replay[ScheduleIndex].Pc,"]\n")
-				//print("Found Routine           [ID:",gp.goid," PC:",gp.gopc,"]\n")
-				if Replay[ScheduleIndex].Id == gp.goid { //&& Replay[ScheduleIndex].Pc == gp.gopc {
-					//print("Found Routine to Schedule!\n")
-					ScheduleIndex++
-					//print("(",ProcID,",",gp.gopc,")\n")
-					print("\tSchedule {\n")
-					print("\t\tId: ",gp.goid,",\n")
-					print("\t\tPc: ",gp.gopc,",\n")
-					print("\t},\n")
-					break
-				} 
+				atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
 			}
 		}
-		//}
+		
+		/* TODO code for cycling through gps (nessisary but not yet
 		/*
+		for {
+			if atomic.Cas(&procchan[DPid].Lock,UNLOCKED,LOCKED) { //TODO use scheduler shared mem
+				if procchan[DPid].Run != -1 {
+					//TODO schedule the goroutine that is supposed to run
+					procchan[DPid].Run = -1
+					//TODO read the state of all runnalbe go routines
+					//TODO update shared memory table for each goroutine
+					//TODO send message to Scheduler, that goroutine has
+					//run
+				}
+				//Unlock shared memory
+				atomic.Store(&procchan[DPid].Lock,UNLOCKED) //TODO unlock using scheduler api
+			}
+		}*/
+
+
+	}
+	//}
+	/*
+	RunIndex = (RunIndex + 1) % int64(ProcCounter)
+	gp = ProcArr[RunQueue[RunIndex]]
+	print("Running: ",RunIndex,"\n")
+	for gp.atomicstatus != _Grunnable {
 		RunIndex = (RunIndex + 1) % int64(ProcCounter)
 		gp = ProcArr[RunQueue[RunIndex]]
 		print("Running: ",RunIndex,"\n")
-		for gp.atomicstatus != _Grunnable {
-			RunIndex = (RunIndex + 1) % int64(ProcCounter)
-			gp = ProcArr[RunQueue[RunIndex]]
-			print("Running: ",RunIndex,"\n")
-		}*/
+	}*/
 
-		//print("\nID: ", gp.goid,"\n")
-	}
+	//print("\nID: ", gp.goid,"\n")
 	return gp
 }
 
@@ -2699,6 +2825,10 @@ var (
 	RunIndex int64
 	ScheduleIndex int
 	DaraProgram string
+	DPid int
+	Running bool
+	RunningGoid int64
+	Record bool =false
 )
 
 type Schedule struct {
@@ -4843,6 +4973,9 @@ func globrunqget(_p_ *p, max int32) *g {
 	}
 
 	n := sched.runqsize/gomaxprocs + 1
+	//print("n=")
+	//print(n)
+	//print("\n")
 	if n > sched.runqsize {
 		n = sched.runqsize
 	}
@@ -4861,8 +4994,17 @@ func globrunqget(_p_ *p, max int32) *g {
 	gp := sched.runqhead.ptr()
 	sched.runqhead = gp.schedlink
 	n--
+	//print("-n=")
+	//print(n)
+	//print("\n")
 	for ; n > 0; n-- {
+		//print("--n=")
+		//print(n)
+		//print("\n")
 		gp1 := sched.runqhead.ptr()
+		if gp1 == nil {
+			return nil
+		}
 		sched.runqhead = gp1.schedlink
 		runqput(_p_, gp1, false)
 	}

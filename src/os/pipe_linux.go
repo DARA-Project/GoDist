@@ -34,3 +34,5 @@ func Pipe() (r *File, w *File, err error) {
 
 	return newFile(uintptr(p[0]), "|0", kindPipe), newFile(uintptr(p[1]), "|1", kindPipe), nil
 }
+
+

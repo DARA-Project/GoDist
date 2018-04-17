@@ -255,3 +255,9 @@ func println(args ...Type)
 type error interface {
 	Error() string
 }
+
+
+//DARA HACK TO GET A PIPE
+// Pipe returns a connected pair of Files; reads from r return bytes written to w.
+// It returns the files and an error, if any.
+//func GPipe(name string) (r *File, w *File, err error)
