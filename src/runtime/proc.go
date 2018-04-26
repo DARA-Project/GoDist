@@ -246,6 +246,9 @@ func os_beforeExit() {
 
 // start forcegc helper goroutine
 func init() {
+	//DARAHACK
+	return
+	//\DARAHACK
 	go forcegchelper()
 }
 
@@ -356,7 +359,10 @@ func acquireSudog() *sudog {
 //go:nosplit
 func releaseSudog(s *sudog) {
 	if s.elem != nil {
-		throw("runtime: sudog with non-nil elem")
+		print("selem:",s.elem,"\n")
+		schedtrace(true)
+		print(`throw("runtime: sudog with non-nil elem)`,"\n")
+		//throw("runtime: sudog with non-nil elem")
 	}
 	if s.isSelect {
 		throw("runtime: sudog with non-false isSelect")
@@ -1652,6 +1658,7 @@ func newextram() {
 
 // oneNewExtraM allocates an m and puts it on the extra list.
 func oneNewExtraM() {
+	print("ONE NEW EXTRA M")
 	// Create extra goroutine locked to extra m.
 	// The goroutine is the context in which the cgo callback will run.
 	// The sched.pc will never be returned to, but setting it to
@@ -1696,6 +1703,8 @@ func oneNewExtraM() {
 	mnext := lockextra(true)
 	mp.schedlink.set(mnext)
 	extraMCount++
+
+
 	unlockextra(mp)
 }
 
@@ -1952,6 +1961,38 @@ func stopm() {
 	}
 
 retry:
+	print("RETRYING!!!\n")
+	lock(&sched.lock)
+	mput(_g_.m)
+	unlock(&sched.lock)
+	print("Unlocking\n")
+	//schedtrace(true)
+	notesleep(&_g_.m.park)
+	print("Post sleep\n")
+	noteclear(&_g_.m.park)
+	print("Post clear\n")
+	if _g_.m.helpgc != 0 {
+		// helpgc() set _g_.m.p and _g_.m.mcache, so we have a P.
+		gchelper()
+		// Undo the effects of helpgc().
+		_g_.m.helpgc = 0
+		_g_.m.mcache = nil
+		_g_.m.p = 0
+		goto retry
+	}
+	print("Aquiring P")
+	acquirep(_g_.m.nextp.ptr())
+	_g_.m.nextp = 0
+	print("M-STOPPED\n")
+}
+
+// Stops execution of the current m until new work is available.
+// Returns with acquired P.
+func stopm_dara_unsafe() {
+	_g_ := getg()
+
+retry:
+	print("RETRYING-unsafe!!!\n")
 	lock(&sched.lock)
 	mput(_g_.m)
 	unlock(&sched.lock)
@@ -1968,6 +2009,7 @@ retry:
 	}
 	acquirep(_g_.m.nextp.ptr())
 	_g_.m.nextp = 0
+	print("M-STOPPED-unsafe\n")
 }
 
 func mspinning() {
@@ -2134,6 +2176,7 @@ func startlockedm(gp *g) {
 	_p_ := releasep()
 	mp.nextp.set(_p_)
 	notewakeup(&mp.park)
+	print("Stopm-startlockedm\n")
 	stopm()
 }
 
@@ -2161,6 +2204,7 @@ func gcstopm() {
 		notewakeup(&sched.stopnote)
 	}
 	unlock(&sched.lock)
+	print("stopm-gcstop\n")
 	stopm()
 }
 
@@ -2209,6 +2253,7 @@ func execute(gp *g, inheritTime bool) {
 // Finds a runnable goroutine to execute.
 // Tries to steal from other P's, get g from global queue, poll network.
 func findrunnable() (gp *g, inheritTime bool) {
+	print("FINDING AN FING RUNNABLE (All love and hate)\n")
 	_g_ := getg()
 
 	// The conditions here and in handoffp must agree: if
@@ -2235,6 +2280,7 @@ top:
 
 	// local runq
 	if gp, inheritTime := runqget(_p_); gp != nil {
+		print("local runq\n")
 		return gp, inheritTime
 	}
 
@@ -2244,6 +2290,7 @@ top:
 		gp := globrunqget(_p_, 0)
 		unlock(&sched.lock)
 		if gp != nil {
+			print("global runq\n")
 			return gp, false
 		}
 	}
@@ -2263,6 +2310,7 @@ top:
 			if trace.enabled {
 				traceGoUnpark(gp, 0)
 			}
+			print("net poll\n")
 			return gp, false
 		}
 	}
@@ -2292,13 +2340,14 @@ top:
 			}
 			stealRunNextG := i > 2 // first look for ready queues with more than 1 g
 			if gp := runqsteal(_p_, allp[enum.position()], stealRunNextG); gp != nil {
+				print("stolen-findrunnable\n")
 				return gp, false
 			}
 		}
 	}
 
 stop:
-
+	print("\n\n\n\nSTOPPING-findrunnable\n\n\n")
 	// We have nothing to do. If we're in the GC mark phase, can
 	// safely scan and blacken objects, and have work to do, run
 	// idle-time marking rather than give up the P.
@@ -2309,6 +2358,7 @@ stop:
 		if trace.enabled {
 			traceGoUnpark(gp, 0)
 		}
+		print("unpark\n")
 		return gp, false
 	}
 
@@ -2327,6 +2377,7 @@ stop:
 	if sched.runqsize != 0 {
 		gp := globrunqget(_p_, 0)
 		unlock(&sched.lock)
+		print("globrunq 2\n")
 		return gp, false
 	}
 	if releasep() != _p_ {
@@ -2420,6 +2471,7 @@ stop:
 			injectglist(gp)
 		}
 	}
+	print("REALLY REALLY STOP!!\n")
 	stopm()
 	goto top
 }
@@ -2522,12 +2574,16 @@ top:
 	if trace.enabled || trace.shutdown {
 		gp = traceReader()
 		if gp != nil {
+			print("sched - Tracer\n")
 			casgstatus(gp, _Gwaiting, _Grunnable)
 			traceGoUnpark(gp, 0)
 		}
 	}
 	if gp == nil && gcBlackenEnabled != 0 {
 		gp = gcController.findRunnableGCWorker(_g_.m.p.ptr())
+		if gp != nil {
+			print("sched - gcController\n")
+		}
 	}
 	if gp == nil {
 		// Check the global runnable queue once in a while to ensure fairness.
@@ -2536,11 +2592,18 @@ top:
 		if _g_.m.p.ptr().schedtick%61 == 0 && sched.runqsize > 0 {
 			lock(&sched.lock)
 			gp = globrunqget(_g_.m.p.ptr(), 1)
+			if gp != nil {
+				print("sched - globalqueue\n")
+			}
 			unlock(&sched.lock)
 		}
 	}
 	if gp == nil {
 		gp, inheritTime = runqget(_g_.m.p.ptr())
+		/*
+		if gp != nil {
+			print("sched - localrunq early\n")
+		}*/
 		if gp != nil && _g_.m.spinning {
 			throw("schedule: spinning with local work")
 		}
@@ -2548,8 +2611,13 @@ top:
 	if gp == nil {
 		gp, inheritTime = findrunnable() // blocks until work is available
 	}
+	/*
+	//DARA
+	if gp.goid == 2 || gp.goid ==3 {
+		schedtrace(true)
+		panic(gp)
+	}*/
 
-	gp = getScheduledGp(gp)
 
 	// This thread is going to run a goroutine and is not spinning anymore,
 	// so if it was marked as spinning we need to reset it now and potentially
@@ -2564,6 +2632,8 @@ top:
 		startlockedm(gp)
 		goto top
 	}
+
+	gp = getScheduledGp(gp)
 
 
 	execute(gp, inheritTime)
@@ -2584,14 +2654,30 @@ const (
 	SHAREDMEMPAGES = 65536
 )
 
+
+var dgStatusStrings = [...]string{
+	_Gidle:      "idle",
+	_Grunnable:  "runnable",
+	_Grunning:   "running",
+	_Gsyscall:   "syscall",
+	_Gwaiting:   "waiting",
+	_Gdead:      "dead",
+	_Gcopystack: "copystack",
+}
+
 type DaraProc struct {
-	Lock uint32 //in the global scheduler this is an int32 due to differences in the atomic libraries
+	Lock uint32
 	Run int
+	TotalRoutines int
+	RunningRoutine RoutineInfo
 	Routines [MAXGOROUTINES]RoutineInfo
 }
 
 type RoutineInfo struct {
 	Status uint32
+	Gid int
+	Gpc uintptr
+	RoutineCount int
 }
 
 var (
@@ -2627,13 +2713,31 @@ func initDara() {
 	} else {
 		panic("DARA turned on but DARAPID not set")
 	}
+	//Set up goid table for the inital threads?
+
+	for i := 0; i < len(allgs); i++ {
+		//set everything including status
+		procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
+		procchan[DPid].Routines[allgs[i].goid].Gid = int(allgs[i].goid)
+		procchan[DPid].Routines[allgs[i].goid].Gpc = allgs[i].gopc
+		var duplicateCounter = 1
+		for j := 0; j < len(procchan[DPid].Routines); j++ {
+			if procchan[DPid].Routines[i].Gpc > 0 && procchan[DPid].Routines[j].Gpc == allgs[i].gopc {
+				duplicateCounter++
+			}
+		}
+		procchan[DPid].Routines[allgs[i].goid].RoutineCount = duplicateCounter
+	}
+	//\DARA
 }
 
 
 //go:yeswritebarrierrec
 func getScheduledGp(gp *g) *g {
-
+	origgp := gp
 	if ProcInit {
+		print("InGetScheduleGP\n")
+		top:
 		var i int
 		for i = 0; i < len(allgs); i++ {
 			procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
@@ -2641,28 +2745,41 @@ func getScheduledGp(gp *g) *g {
 
 		//casgstatus(gp,readgstatus(gp),_Gwaiting) //set g status to
 		//waiting (used for reference)
+		print("Stop Running\n")
 		if Running {
 			//report updates to state and unlock variable TODO this
 			//must be more expressive
 			if procchan[DPid].Run == -3 {
 				//This is the record state
+				print(procchan[DPid].Routines[RunningGoid].Gpc)
+				print("\n")
 				procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+				procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
+				procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
+				procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
+				procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
 			} else {
 				//this is the replay state
 				procchan[DPid].Run = -1
 			}
 			//Unlock
 			Running = false
+			print("Unlocking\n")
 			atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
 			//print("Unlocking")
 		}
+		print("Entering loop")
+
+		//schedtrace(true)
 		//wait for the global scheduler
 		for {
 			if atomic.Cas(&(procchan[DPid].Lock),UNLOCKED,LOCKED) { //TODO use scheduler shared mem
 				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
+					//print("active\n")
+
 					if procchan[DPid].Run == -2 {
 						//first instance
-						//print("\nfirst instance\n")
+						print("\nfirst instance\n")
 						Running = true
 						return gp
 					}
@@ -2673,56 +2790,142 @@ func getScheduledGp(gp *g) *g {
 						RunningGoid = gp.goid
 						Record = true
 						Running = true
+
+						print("gp record status: ")
+						print(dgStatusStrings[readgstatus(gp)])
+						print("\n")
 						return gp
 					}
 					if Record {
 						atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
 						continue
 					}
+					
+					replay:
+					//Don't bother replaying garbage collection, or
+					//finalization
+					if procchan[DPid].RunningRoutine.Gid == 2 ||
+					   procchan[DPid].RunningRoutine.Gid == 3 {
+					   print("Skipping out on the garbage collector and finalizer threads")
+					   Running = true
+					   goto top
+				   }
 
 					//print("Never During Record")
 					//print(procchan[DPid].Run)
-					_g_ := getg()
-					_p_ := _g_.m.p.ptr()
-					var gpcounter int = 0
-					//Set the ProcArr to nil, this will prevent stale
-					//g from last run
-					for i := 0; i<len(ProcArr);i++ {
-						ProcArr[i] = nil
-					}
-					//Pop all g's off of the local runq
-					for gpl, _ := runqget(_p_); gpl != nil; gpl, _ = runqget(_p_) {
-						//write gp to a list
-						ProcArr[gpcounter] = gpl
-						gpcounter++
-					}
-					for gpl := globrunqget(_p_,0); gpl != nil; gpl = globrunqget(_p_,0) {
-						ProcArr[gpcounter] = gpl
-						gpcounter++
-						//write gp to a list
-					}
-					//TODO itterate over list and choose gp
-					for i := 0;i<gpcounter; i++ {
-						if ProcArr[i].goid == int64(procchan[DPid].Run) {
-							print("HITHITHIT ")
-							gp = ProcArr[i]
+					/*Third try, this time each of the dequeueing
+					* strategies used by find runnable should be
+					* exercised till thier conclusion ie when they
+					* return nil. Post extraction all threads should
+					* be placed on the local queue for speedy pops
+					* later. the total state of each should be
+					* reported. This same routine may need to be used
+					* in the record state to capture all of the
+					* systems concurrenc.*/
+					if procchan[DPid].Routines[gp.goid].Gpc == procchan[DPid].RunningRoutine.Gpc &&
+					   procchan[DPid].Routines[gp.goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
+					   print("Spread Eagle")
+					} else {
+						gp = findallrunnableprocs(gp)
+					} 
+					
+
+					/* Attempt 2 read everything off of allgs */
+					/* This did not seem to work, somewhere I was
+					* not correctly scheduling threads.
+					*/
+
+					/* In this loop we are almost guarenteed to
+					* find the g we are looking for but scheduling
+					* it can kill us. Use this loop to try and
+					* reason about dead threads, if they are ded
+					* then we can bork*/
+					print("Running (")
+					print(DPid)
+					print(",")
+					print(gp.goid)
+					print(",")
+					print(gp.gopc)
+					print(")\n")
+					if gp.gopc != procchan[DPid].RunningRoutine.Gpc ||
+					   procchan[DPid].Routines[gp.goid].RoutineCount != procchan[DPid].RunningRoutine.RoutineCount {
+
+
+
+						//TODO move
+
+						for i:=0;i<len(allgs);i++{
+							if procchan[DPid].Routines[allgs[i].goid].Gpc == procchan[DPid].RunningRoutine.Gpc &&
+							   procchan[DPid].Routines[allgs[i].goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
+								print("HITHITHIT -2\n")
+								globrunqput(gp)
+								gp = allgs[i]
+								break
+							}
 						}
-					}
-					//Put gp's back onto the runq
-					for i := 0;i<gpcounter; i++ {
-						//dont put the scheduled gp back onto the
-						//runq
-						if ProcArr[i] == gp {
+						//Run whichever goroutine was passed in
+						//print("returning gp")
+
+						//BORK if Dead
+						if readgstatus(gp) == _Gdead {
+							print("don't schedule dead threads you git!\n")
+							//if the thread is allready dead I'm not
+							//sure what the best course of action is.
+							//It cannot possibly be scheduled. I think
+							//that pretending that the thread was run
+							//might be the right course for now.
+
+							ResetProcArr(gp)
+							Running = true
+							goto top
+						}
+
+						//This has the potential to kill
+						if readgstatus(gp) == _Gwaiting {
+							ready(gp, 0, true)
+							//retry
+							gp = origgp
+
+							print("re-gather")
+							//panic("FUUUUUUUUUUUUUUUUUUUUUU")
+							print("Really stopping Stopping\n")
+							atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
+							globrunqput(gp)
+							// In the real scheduler there is a desparate
+							// effort made to find all possible work
+							// before parking an m. We do not have the
+							// same restraints because there is specific
+							// work that we want to run. stop_dara_unsafe
+							// just stops using a thread so that we can
+							// block for future io returns
+							ResetProcArr(gp)
+							goto replay
+							//stopm_dara_unsafe()
+							//stopm()
+							print("Post Stopm\n")
 							continue
+							//goto gather
 						}
-						globrunqput(ProcArr[i])
-					}
 
+						print("Trying to Run (")
+						print(DPid)
+						print(",")
+						print(procchan[DPid].Run)
+						print(",")
+						//why would this print 0, looking at
+						//procchan[Dpid].Routines[Run]
+						print(procchan[DPid].RunningRoutine.Gpc)
+						print(")\n")
+						//panic("WE COULD NOT DO IT TRY again")
+					} 
 
+						
 
-					//Run whichever goroutine was passed in
-					//print("returning gp")
-					Running=true //TODO REMOVE ERROR
+					print("gp status: ")
+					print(dgStatusStrings[readgstatus(gp)])
+					print("\n")
+					
+					Running = true
 					return gp
 					//TODO read the state of all runnalbe go routines
 					//TODO update shared memory table for each goroutine
@@ -2732,41 +2935,254 @@ func getScheduledGp(gp *g) *g {
 				atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
 			}
 		}
-		
-		/* TODO code for cycling through gps (nessisary but not yet
-		/*
-		for {
-			if atomic.Cas(&procchan[DPid].Lock,UNLOCKED,LOCKED) { //TODO use scheduler shared mem
-				if procchan[DPid].Run != -1 {
-					//TODO schedule the goroutine that is supposed to run
-					procchan[DPid].Run = -1
-					//TODO read the state of all runnalbe go routines
-					//TODO update shared memory table for each goroutine
-					//TODO send message to Scheduler, that goroutine has
-					//run
-				}
-				//Unlock shared memory
-				atomic.Store(&procchan[DPid].Lock,UNLOCKED) //TODO unlock using scheduler api
-			}
-		}*/
-
-
 	}
-	//}
-	/*
-	RunIndex = (RunIndex + 1) % int64(ProcCounter)
-	gp = ProcArr[RunQueue[RunIndex]]
-	print("Running: ",RunIndex,"\n")
-	for gp.atomicstatus != _Grunnable {
-		RunIndex = (RunIndex + 1) % int64(ProcCounter)
-		gp = ProcArr[RunQueue[RunIndex]]
-		print("Running: ",RunIndex,"\n")
-	}*/
-
-	//print("\nID: ", gp.goid,"\n")
 	return gp
 }
 
+func findallrunnableprocs(gp *g) *g {
+
+	//gather:
+	//_g_ := getg()
+	gpcounter = 0
+	var found = false
+	//Set the ProcArr to nil, this will prevent stale
+	//g from last run
+	for i := 0; i<len(ProcArr);i++ {
+		ProcArr[i] = nil
+	}
+	print("unwait everything\n")
+	if fingwait && fingwake {
+		for gpl := wakefing(); gpl != nil; gpl = wakefing() {
+			print("unwaiting\n")
+			ready(gpl, 0, true)
+		}
+	}
+
+	for _, _p_ := range allp {
+		print("popping local runqueue!\n")
+		//Pop all g's off of the local runq
+		for gpl, _ := runqget(_p_); gpl != nil; gpl, _ = runqget(_p_) {
+			print("popped local (")
+			print(gpl.goid)
+			print(")\n")
+			
+			//write gp to a list
+			ProcArr[gpcounter] = gpl
+			gpcounter++
+		}
+		if gp, found = CheckAndResetProcArr(gp); found == true {
+			return gp
+		}
+		//pop all g's off of the global runqueue
+		print("popping global runqueue!\n")
+		for gpl := globrunqget(_p_,0); gpl != nil; gpl = globrunqget(_p_,0) {
+			print("poped global\n")
+			ProcArr[gpcounter] = gpl
+			gpcounter++
+			//write gp to a list
+		}
+		if gp, found = CheckAndResetProcArr(gp); found == true {
+			return gp
+		}
+
+	}
+	//Poll the network!
+	print("netpolling!\n")
+	if netpollinited() && atomic.Load(&netpollWaiters) > 0 && atomic.Load64(&sched.lastpoll) != 0 {
+		for gpl := netpoll(false); gpl != nil;gpl = netpoll(false) { // non-blocking
+
+			// netpoll returns list of goroutines linked by schedlink.
+			injectglist(gpl.schedlink.ptr())
+			casgstatus(gpl, _Gwaiting, _Grunnable)
+			if trace.enabled {
+				traceGoUnpark(gpl, 0)
+			}
+			print("net polled")
+			ProcArr[gpcounter] = gpl
+			gpcounter++
+		}
+	}
+	if gp, found = CheckAndResetProcArr(gp); found == true {
+		return gp
+	}
+	//_p_ := _g_.m.p.ptr()
+	/*
+	//Steal from the rich and give to the poor
+	for i := 0; i < 4; i++ {
+		for enum := stealOrder.start(fastrand()); !enum.done(); enum.next() {
+			if sched.gcwaiting != 0 {
+				break
+			}
+			stealRunNextG := i > 2 // first look for ready queues with more than 1 g
+			if gpl := runqsteal(_p_, allp[enum.position()], stealRunNextG); gpl != nil {
+				ProcArr[gpcounter] = gpl
+				gpcounter++
+				print("stolen\n")
+			}
+		}
+	}
+	if gp, found = CheckAndResetProcArr(gp); found == true {
+		return gp
+	}*/
+//stop:
+/*
+	//BEGIN OF THE STOP COPIED BLOCK
+	*/
+	// return P and block
+	//There is a good chance that this block of code is unnessisary
+	//due to the global runque allready being popped. Lets try not
+	//idling p, as there can be only one p to begin with
+
+
+
+	/*
+	lock(&sched.lock)
+	if sched.gcwaiting != 0 || _p_.runSafePointFn != 0 {
+		unlock(&sched.lock)
+		goto gather //TODO this was top, I think that was wrong though
+	}
+	for sched.runqsize != 0 {
+		gpl := globrunqget(_p_, 0)
+		ProcArr[gpcounter] = gpl
+		gpcounter++
+		unlock(&sched.lock)
+		print("globrunq 2\n")
+	}
+	if releasep() != _p_ {
+		throw("findrunnable: wrong p")
+	}
+	pidleput(_p_)
+	unlock(&sched.lock)
+
+	wasSpinning := _g_.m.spinning
+	if _g_.m.spinning {
+		_g_.m.spinning = false
+		if int32(atomic.Xadd(&sched.nmspinning, -1)) < 0 {
+			throw("findrunnable: negative nmspinning")
+		}
+	}
+
+	allpSnapshot := allp
+	// check all runqueues once again
+	for _, _p_ := range allpSnapshot {
+		if !runqempty(_p_) {
+			lock(&sched.lock)
+			_p_ = pidleget()
+			unlock(&sched.lock)
+			if _p_ != nil {
+				acquirep(_p_)
+				if wasSpinning {
+					_g_.m.spinning = true
+					atomic.Xadd(&sched.nmspinning, 1)
+				}
+				print("Regathering")
+				goto gather
+			}
+			break
+		}
+	}*/
+
+	/*
+	print("REPOLLING!!!\n")
+	// poll network
+	if netpollinited() && atomic.Load(&netpollWaiters) > 0 && atomic.Xchg64(&sched.lastpoll, 0) != 0 {
+		if _g_.m.p != 0 {
+			throw("findrunnable: netpoll with p")
+		}
+		if _g_.m.spinning {
+			throw("findrunnable: netpoll with spinning")
+		}
+		gpl := netpoll(true) // block until new work is available
+		atomic.Store64(&sched.lastpoll, uint64(nanotime()))
+		if gpl != nil {
+			lock(&sched.lock)
+			_p_ = pidleget()
+			unlock(&sched.lock)
+			if _p_ != nil {
+				acquirep(_p_)
+				injectglist(gpl.schedlink.ptr())
+				casgstatus(gpl, _Gwaiting, _Grunnable)
+				if trace.enabled {
+					traceGoUnpark(gpl, 0)
+				}
+				print("Polled from the network on second go\n")
+				ProcArr[gpcounter] = gpl
+				gpcounter++
+			}
+			injectglist(gpl)
+		}
+	}
+	*/
+
+	//TODO itterate over list and choose gp
+	for i := 0;i<gpcounter; i++ {
+		print("Inspecting (")
+		print(DPid)
+		print(",")
+		print(ProcArr[i].goid)
+		print(",")
+		print(ProcArr[i].gopc)
+		print(")\n")
+
+		if ProcArr[i].gopc == procchan[DPid].RunningRoutine.Gpc &&
+		   procchan[DPid].Routines[ProcArr[i].goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
+			print("HITHITHIT ")
+			globrunqput(gp)
+			gp = ProcArr[i]
+			if readgstatus(gp) == _Gwaiting {
+				print("Readying after finding on runque in waiting state\n")
+				ready(gp, 0, true)
+				//casgstatus(gp,readgstatus(gp),_Gwaiting)
+			}
+			break
+		}
+	}
+	ResetProcArr(gp)
+	return gp
+}
+
+func CheckAndResetProcArr(gp *g) (*g, bool) {
+	var found bool = false
+	for i := 0;i<gpcounter; i++ {
+		print("Inspecting (")
+		print(DPid)
+		print(",")
+		print(ProcArr[i].goid)
+		print(",")
+		print(ProcArr[i].gopc)
+		print(")\n")
+
+		if ProcArr[i].gopc == procchan[DPid].RunningRoutine.Gpc &&
+		   procchan[DPid].Routines[ProcArr[i].goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
+			print("HITHITHIT ")
+			found = true
+			globrunqput(gp)
+			gp = ProcArr[i]
+			if readgstatus(gp) == _Gwaiting {
+				print("Readying after finding on runque in waiting state\n")
+				ready(gp, 0, true)
+				//casgstatus(gp,readgstatus(gp),_Gwaiting)
+			}
+			break
+		}
+	}
+	if found {
+		ResetProcArr(gp)
+	}
+	return gp, found
+}
+
+func ResetProcArr(gp *g) {
+	//Put gp's back onto the runq
+	for i := 0;i<gpcounter; i++ {
+		//dont put the scheduled gp back onto the
+		//runq
+		if ProcArr[i] == gp {
+			continue
+		}
+		globrunqput(ProcArr[i])
+	}
+}
 
 func procLookup(gp *g) (int64, bool) {
 
@@ -2821,6 +3237,7 @@ var (
 	ProcID int64
 	ProcOk bool
 	ProcArr [PROC_SIZE]*g
+	gpcounter int
 	RunQueue [PROC_SIZE]int64
 	RunIndex int64
 	ScheduleIndex int
@@ -3513,7 +3930,9 @@ func exitsyscall0(gp *g) {
 		stoplockedm()
 		execute(gp, false) // Never returns.
 	}
+	print("stopmexitsyscall1100\n")
 	stopm()
+	print("Scheduling after syscall\n")
 	schedule() // Never returns.
 }
 
@@ -3645,6 +4064,11 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 	_g_.m.locks++ // disable preemption because it can be holding p in a local var
 	siz := narg
 	siz = (siz + 7) &^ 7
+	/*DARA
+	print("\n")
+	print(callerpc)
+	print("\n")
+	*/
 
 	// We could allocate a larger initial stack if necessary.
 	// Not worth it: this is almost always an error.
@@ -3656,6 +4080,8 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 
 	_p_ := _g_.m.p.ptr()
 	newg := gfget(_p_)
+
+
 	if newg == nil {
 		newg = malg(_StackMin)
 		casgstatus(newg, _Gidle, _Gdead)
@@ -3666,6 +4092,11 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 	}
 
 	if readgstatus(newg) != _Gdead {
+		print("new g gid:")
+		print(newg.goid)
+		print("\n")
+
+		schedtrace(true)
 		throw("newproc1: new g is not Gdead")
 	}
 
@@ -3731,6 +4162,40 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 	}
 	runqput(_p_, newg, true)
 
+
+	//DARA 
+	//this is the trick addition of goroutines part
+	//For the sake of determanistic replay it is not good enough to
+	//replay threads based on GoId's they were not always assigend to
+	//the same routine, ie sampe pc so scheduling based on that
+	//critera alone did not work
+
+	//The current solution is to index into the routines based on
+	//GoId's which at the moment I dont' believe get reused. Under
+	//this assumetion I can tract unique threads as a combination of
+	//their PC and a counter on each g launched at a given pc.
+
+	//If it is the case that Goids are reused, then I will need to use
+	//a different strategy. The problem with the reuse is that an
+	//instance of a prior pc may be over written, in which case the
+	//duplicate counter will be wrong and the schedule will be
+	//squewed
+	if ProcInit {
+		//set everything including status
+		procchan[DPid].Routines[newg.goid].Status = readgstatus(newg)
+		procchan[DPid].Routines[newg.goid].Gid = int(newg.goid)
+		procchan[DPid].Routines[newg.goid].Gpc = newg.gopc
+		var duplicateCounter = 0
+		for i := 0; i < len(procchan[DPid].Routines); i++ {
+			if procchan[DPid].Routines[i].Gpc > 0 && procchan[DPid].Routines[i].Gpc == newg.gopc {
+				duplicateCounter++
+			}
+		}
+		procchan[DPid].Routines[newg.goid].RoutineCount = duplicateCounter
+	}
+	//\DARA
+
+
 	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 && mainStarted {
 		wakep()
 	}
@@ -3756,7 +4221,6 @@ func gfput(_p_ *p, gp *g) {
 		gp.stack.hi = 0
 		gp.stackguard0 = 0
 	}
-
 	gp.schedlink.set(_p_.gfree)
 	_p_.gfree = gp
 	_p_.gfreecnt++
@@ -5016,9 +5480,11 @@ func globrunqget(_p_ *p, max int32) *g {
 // May run during STW, so write barriers are not allowed.
 //go:nowritebarrierrec
 func pidleput(_p_ *p) {
+	//DARA HACK
+	/*
 	if !runqempty(_p_) {
 		throw("pidleput: P has non-empty run queue")
-	}
+	}*/
 	_p_.link = sched.pidle
 	sched.pidle.set(_p_)
 	atomic.Xadd(&sched.npidle, 1) // TODO: fast atomic
