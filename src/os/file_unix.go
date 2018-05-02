@@ -7,6 +7,7 @@
 package os
 
 import (
+    "bufio"
 	"internal/poll"
 	"runtime"
 	"syscall"
@@ -34,11 +35,13 @@ func rename(oldname, newname string) error {
 		return &LinkError{"rename", oldname, newname, syscall.EEXIST}
 	}
     // DARA Instrumentation
-    print("[RENAME] : ")
-    print(oldname)
-    print(" ")
-    println(newname)
-	err = syscall.Rename(oldname, newname)
+    if syscall.Is_dara_profiling_on() {
+        print("[RENAME] : ")
+        print(oldname)
+        print(" ")
+        println(newname)
+	}
+    err = syscall.Rename(oldname, newname)
 	if err != nil {
 		return &LinkError{"rename", oldname, newname, err}
 	}
@@ -168,7 +171,7 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 	}
 
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[OPEN] : ")
         print(name + " ")
         print(flag)
@@ -221,7 +224,7 @@ func (file *file) close() error {
 		return syscall.EINVAL
 	}
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[CLOSE] : ")
         println(file.name)
     }
@@ -242,12 +245,21 @@ func (file *file) close() error {
 // It returns the number of bytes read and an error, if any.
 func (f *File) read(b []byte) (n int, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[READ] : ")
         println(f.file.name)
     }
     n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
+    if syscall.Is_dara_profiling_on() {
+        print("Read : ", n, "bytes")
+        scanner := bufio.NewScanner(Stdin)
+        var input string
+        for input != " " {
+            scanner.Scan()
+            input = scanner.Text()
+        }
+    }
 	return n, err
 }
 
@@ -256,7 +268,7 @@ func (f *File) read(b []byte) (n int, err error) {
 // EOF is signaled by a zero count with err set to nil.
 func (f *File) pread(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[PREAD] : ")
         print(f.file.name)
         print(" ")
@@ -264,6 +276,15 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
     }
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
+    if syscall.Is_dara_profiling_on() {
+        print("Read : ", n, "bytes")
+        scanner := bufio.NewScanner(Stdin)
+        var input string
+        for input != " " {
+            scanner.Scan()
+            input = scanner.Text()
+        }
+    }
 	return n, err
 }
 
@@ -271,7 +292,7 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) write(b []byte) (n int, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[WRITE] : ")
         print(f.file.name)
         print(" ")
@@ -279,6 +300,15 @@ func (f *File) write(b []byte) (n int, err error) {
 	}
     n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
+    if syscall.Is_dara_profiling_on() {
+        print("Wrote : ", n, "bytes")
+        scanner := bufio.NewScanner(Stdin)
+        var input string
+        for input != " " {
+            scanner.Scan()
+            input = scanner.Text()
+        }
+    }
 	return n, err
 }
 
@@ -286,7 +316,7 @@ func (f *File) write(b []byte) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[PWRITE] : ")
         print(f.file.name)
         print(" ")
@@ -296,6 +326,15 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 	}
     n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
+    if syscall.Is_dara_profiling_on() {
+        print("Wrote : ", n, "bytes")
+        scanner := bufio.NewScanner(Stdin)
+        var input string
+        for input != " " {
+            scanner.Scan()
+            input = scanner.Text()
+        }
+    }
 	return n, err
 }
 
@@ -305,7 +344,7 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 // It returns the new offset and an error, if any.
 func (f *File) seek(offset int64, whence int) (ret int64, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[SEEK] : ")
         print(f.file.name)
         print(" ")
@@ -323,7 +362,7 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 // If there is an error, it will be of type *PathError.
 func Truncate(name string, size int64) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[TRUNCATE] : ")
         print(name)
         print(" ")
@@ -343,7 +382,7 @@ func Remove(name string) error {
 	// Try both: it is cheaper on average than
 	// doing a Stat plus the right one
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[REMOVE]")
         println("\t[UNLINK] : " + name)
     }
@@ -351,7 +390,7 @@ func Remove(name string) error {
 	if e == nil {
 		return nil
 	}
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("\t[RMDIR] : " + name)
 	}
     e1 := syscall.Rmdir(name)
@@ -390,7 +429,7 @@ func tempDir() string {
 // If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[LINK] : ")
         print(oldname)
         print(" ")
@@ -407,7 +446,7 @@ func Link(oldname, newname string) error {
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[SYMLINK] : ")
         print(oldname)
         print(" ")
