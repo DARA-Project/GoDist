@@ -70,7 +70,7 @@ type Signal interface {
 // Getpid returns the process id of the caller.
 func Getpid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETPID]")
     }
     return syscall.Getpid()
@@ -79,7 +79,7 @@ func Getpid() int {
 // Getppid returns the process id of the caller's parent.
 func Getppid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETPPID]")
     }
     return syscall.Getppid()

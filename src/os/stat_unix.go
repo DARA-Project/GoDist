@@ -14,7 +14,7 @@ import (
 // If there is an error, it will be of type *PathError.
 func (f *File) Stat() (FileInfo, error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FSTAT] : ")
         println(f.file.name)
     }
@@ -34,7 +34,7 @@ func (f *File) Stat() (FileInfo, error) {
 func statNolog(name string) (FileInfo, error) {
 	var fs fileStat
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[STAT] : " + name)
     }
 	err := syscall.Stat(name, &fs.sys)
@@ -49,7 +49,7 @@ func statNolog(name string) (FileInfo, error) {
 func lstatNolog(name string) (FileInfo, error) {
 	var fs fileStat
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[LSTAT] : " + name)
     }
 	err := syscall.Lstat(name, &fs.sys)

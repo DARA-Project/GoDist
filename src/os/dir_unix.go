@@ -18,7 +18,7 @@ const (
 
 func (f *File) readdir(n int) (fi []FileInfo, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[Readdir] : ")
         print(f.file.name)
         print(" ")
@@ -52,7 +52,7 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 
 func (f *File) readdirnames(n int) (names []string, err error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[Readdirnames] : ")
         print(f.file.name)
         print(" ")

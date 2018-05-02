@@ -17,7 +17,7 @@ func sigpipe() // implemented in package runtime
 // If there is an error, it will be of type *PathError.
 func Readlink(name string) (string, error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[READLINK] : ")
         println(name)
     }
@@ -52,7 +52,7 @@ func syscallMode(i FileMode) (o uint32) {
 // See docs in file.go:Chmod.
 func chmod(name string, mode FileMode) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[CHMOD] : ")
         print(name)
         print(" ")
@@ -67,7 +67,7 @@ func chmod(name string, mode FileMode) error {
 // See docs in file.go:(*File).Chmod.
 func (f *File) chmod(mode FileMode) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FCHMOD] : ")
         print(f.file.name)
         print(" ")
@@ -90,7 +90,7 @@ func (f *File) chmod(mode FileMode) error {
 // in *PathError.
 func Chown(name string, uid, gid int) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[CHOWN] : ")
         print(name)
         print(" ")
@@ -112,7 +112,7 @@ func Chown(name string, uid, gid int) error {
 // in *PathError.
 func Lchown(name string, uid, gid int) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[LCHOWN] : ")
         print(name)
         print(" ")
@@ -133,7 +133,7 @@ func Lchown(name string, uid, gid int) error {
 // in *PathError.
 func (f *File) Chown(uid, gid int) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FCHOWN] : ")
         print(f.file.name)
         print(" ")
@@ -155,7 +155,7 @@ func (f *File) Chown(uid, gid int) error {
 // If there is an error, it will be of type *PathError.
 func (f *File) Truncate(size int64) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FTRUNCATE] : ")
         print(f.file.name)
         print(" ")
@@ -175,7 +175,7 @@ func (f *File) Truncate(size int64) error {
 // of recently written data to disk.
 func (f *File) Sync() error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FSYNC] : ")
         println(f.file.name)
     }
@@ -196,7 +196,7 @@ func (f *File) Sync() error {
 // If there is an error, it will be of type *PathError.
 func Chtimes(name string, atime time.Time, mtime time.Time) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[CHTIMES] : ")
         print(name)
         print(" ")
@@ -218,7 +218,7 @@ func Chtimes(name string, atime time.Time, mtime time.Time) error {
 // If there is an error, it will be of type *PathError.
 func (f *File) Chdir() error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[FCHDIR] : ")
         println(f.file.name)
     }
@@ -234,7 +234,7 @@ func (f *File) Chdir() error {
 // setDeadline sets the read and write deadline.
 func (f *File) setDeadline(t time.Time) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[SetDeadline] : ")
         print(f.file.name)
         print(" ")
@@ -249,7 +249,7 @@ func (f *File) setDeadline(t time.Time) error {
 // setReadDeadline sets the read deadline.
 func (f *File) setReadDeadline(t time.Time) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[SetReadDeadline] : ")
         print(f.file.name)
         print(" ")
@@ -264,7 +264,7 @@ func (f *File) setReadDeadline(t time.Time) error {
 // setWriteDeadline sets the write deadline.
 func (f *File) setWriteDeadline(t time.Time) error {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[SetWriteDeadline] : ")
         print(f.file.name)
         print(" ")

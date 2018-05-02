@@ -29,7 +29,7 @@ func runtime_args() []string // in package runtime
 // On Windows, it returns -1.
 func Getuid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETUID]")
     }
     return syscall.Getuid()
@@ -40,7 +40,7 @@ func Getuid() int {
 // On Windows, it returns -1.
 func Geteuid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETEUID]")
     }
     return syscall.Geteuid()
@@ -51,7 +51,7 @@ func Geteuid() int {
 // On Windows, it returns -1.
 func Getgid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETGID]")
     }
     return syscall.Getgid()
@@ -62,7 +62,7 @@ func Getgid() int {
 // On Windows, it returns -1.
 func Getegid() int {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETEGID]")
     }
     return syscall.Getegid()
@@ -74,7 +74,7 @@ func Getegid() int {
 // for a possible alternative.
 func Getgroups() ([]int, error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[GETGROUPS]")
     }
 	gids, e := syscall.Getgroups()
@@ -85,7 +85,7 @@ func Getgroups() ([]int, error) {
 // Conventionally, code zero indicates success, non-zero an error.
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         print("[EXIT] : ")
         println(code)
     }

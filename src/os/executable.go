@@ -4,6 +4,10 @@
 
 package os
 
+import (
+    "syscall"
+)
+
 // Executable returns the path name for the executable that started
 // the current process. There is no guarantee that the path is still
 // pointing to the correct executable. If a symlink was used to start
@@ -19,7 +23,7 @@ package os
 // Executable is not supported on nacl.
 func Executable() (string, error) {
     // DARA Instrumentation
-    if Is_dara_profiling_on() {
+    if syscall.Is_dara_profiling_on() {
         println("[EXECUTABLE]")
     }
 	return executable()
