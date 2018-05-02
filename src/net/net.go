@@ -79,6 +79,7 @@ On Windows, the resolver always uses C library functions, such as GetAddrInfo an
 package net
 
 import (
+    "bufio"
 	"context"
 	"errors"
 	"internal/poll"
@@ -171,10 +172,12 @@ func (c *conn) ok() bool { return c != nil && c.fd != nil }
 // Read implements the Conn Read method.
 func (c *conn) Read(b []byte) (int, error) {
     // DARA Instrumentation
-    print("[NET.READ] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    println(c.fd.raddr.String())
+    if syscall.Is_dara_profiling_on() {
+        print("[NET.READ] : ")
+        print(c.fd.laddr.String())
+        print(" ")
+        println(c.fd.raddr.String())
+    }
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
@@ -182,19 +185,29 @@ func (c *conn) Read(b []byte) (int, error) {
 	if err != nil && err != io.EOF {
 		err = &OpError{Op: "read", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
 	}
+    print("Read ")
+    println(n)
+    scanner := bufio.NewScanner(os.Stdin)
+    var input string
+    for input != " "{
+        scanner.Scan()
+        input = scanner.Text()
+    }
 	return n, err
 }
 
 // Write implements the Conn Write method.
 func (c *conn) Write(b []byte) (int, error) {
     // DARA Instrumentation
-    print("[NET.WRITE] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(string(b[:]))
-	if !c.ok() {
+    if syscall.Is_dara_profiling_on() {
+        print("[NET.WRITE] : ")
+        print(c.fd.laddr.String())
+        print(" ")
+        print(c.fd.raddr.String())
+        print(" ")
+        println(string(b[:]))
+	}
+    if !c.ok() {
 		return 0, syscall.EINVAL
 	}
 	n, err := c.fd.Write(b)
