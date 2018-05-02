@@ -72,6 +72,7 @@
 package time
 
 import "errors"
+import "syscall"
 
 // A Time represents an instant in time with nanosecond precision.
 //
@@ -1041,6 +1042,10 @@ func now() (sec int64, nsec int32, mono int64)
 
 // Now returns the current local time.
 func Now() Time {
+    // DARA Instrumentation
+    if syscall.Is_dara_profiling_on() {
+        println("[TIME.NOW]")
+    }
 	sec, nsec, mono := now()
 	sec += unixToInternal - minWall
 	if uint64(sec)>>33 != 0 {
