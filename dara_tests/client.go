@@ -12,6 +12,7 @@ func main() {
      reader := bufio.NewReader(os.Stdin)
      text, _ := reader.ReadString('\n')
      // send to socket
+     fmt.Println("Writing to conenction")
      fmt.Fprintf(conn, text)
      // listen for reply
      bufio.NewReader(conn).ReadString('\n')
