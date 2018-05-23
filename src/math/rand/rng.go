@@ -199,6 +199,9 @@ func seedrand(x int32) int32 {
 
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
 func (rng *rngSource) Seed(seed int64) {
+	//@DARA Inject
+	seed = 0
+	// \@DaraInject
 	rng.tap = 0
 	rng.feed = _LEN - _TAP
 

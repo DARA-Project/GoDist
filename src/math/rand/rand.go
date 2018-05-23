@@ -69,6 +69,9 @@ func New(src Source) *Rand {
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
 // Seed should not be called concurrently with any other Rand method.
 func (r *Rand) Seed(seed int64) {
+	//@DARA INJECT
+	seed = 0
+	//@DARA /INJECT
 	if lk, ok := r.src.(*lockedSource); ok {
 		lk.seedPos(seed, &r.readPos)
 		return

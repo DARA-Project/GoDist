@@ -200,11 +200,11 @@ func main() {
 		return
 	}
 	fn = main_main // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
-	//DARA INJET
+	//@DARA INJET
 	if gogetenv("DARAON") == "true" {
 		initDara()
 	}
-	//\DARA INJECT
+	//\@DARA INJECT
 	fn()
 	if raceenabled {
 		racefini()
@@ -246,9 +246,9 @@ func os_beforeExit() {
 
 // start forcegc helper goroutine
 func init() {
-	//DARAHACK
+	//@DARA Inject - Do not run garbage collection
 	return
-	//\DARAHACK
+	//\@DARA Inject
 	go forcegchelper()
 }
 
@@ -572,7 +572,16 @@ func mcommoninit(mp *m) {
 	checkmcount()
 
 	mp.fastrand[0] = 1597334677 * uint32(mp.id)
-	mp.fastrand[1] = uint32(cputicks())
+	//@DARA INJECT //Make fastrand deterministic
+	//ORIGINAL
+		//mp.fastrand[0] = 1597334677 * uint32(mp.id)
+		//mp.fastrand[1] = uint32(cputicks())
+	//INJECTED
+	mp.fastrand[0] = 1597334677 * uint32(0)
+	mp.fastrand[1] = uint32(0)
+	//end @DARA INJECT
+
+
 	if mp.fastrand[0]|mp.fastrand[1] == 0 {
 		mp.fastrand[1] = 1
 	}
@@ -1983,22 +1992,38 @@ retry:
 }
 
 func dstopm() {
-//_g_ := getg()
-	loop := 1000000
-//	lock(&sched.lock)
-//	mput(_g_.m)
-//	unlock(&sched.lock)
-	//schedtrace(true)
-	for i:=0;i<loop;i++ {
-		if i%(loop/10)==0 {
-			print(i)
-		}
+	_g_ := getg()
+	if _g_.m.locks != 0 {
+		dprint(WARN, func() {println("throw(stopm holding locks)")})
 	}
-	//notesleep(&_g_.m.park)
+	if _g_.m.p != 0 {
+		dprint(WARN, func() {println("throw(stopm holding p)")})
+	}
+	if _g_.m.spinning {
+		dprint(WARN, func() {println("throw(stopm spinning)")})
+	}
+
+retry:
+	lock(&sched.lock)
+	mput(_g_.m)
+	unlock(&sched.lock)
+	//schedtrace(true)
+	notesleep(&_g_.m.park)
 	//DARA NOTE this has the potential to stop
-	//noteclear(&_g_.m.park)
-//	acquirep(_g_.m.nextp.ptr())
-//	_g_.m.nextp = 0
+	noteclear(&_g_.m.park)
+	if _g_.m.helpgc != 0 {
+		// helpgc() set _g_.m.p and _g_.m.mcache, so we have a P.
+		gchelper()
+		// Undo the effects of helpgc().
+		_g_.m.helpgc = 0
+		_g_.m.mcache = nil
+		_g_.m.p = 0
+		goto retry
+	}
+	//acquirep(_g_.m.nextp.ptr())
+	//_g_.m.nextp = 0
+
+
 }
 
 
@@ -2619,6 +2644,8 @@ top:
 
 //DARA Specific consts
 const (
+	//TODO TODO shared constants from the global scheduler, document
+	//all of this well
 	_MAP_SHARED = 0x01 // used for mmap (not defined in linux defs)
 	CHANNELS = 5 //TODO should be the same as procs
 	DARAFD = 666
@@ -2665,6 +2692,8 @@ type RoutineInfo struct {
 	RoutineCount int
 	FuncInfo [64]byte
 }
+
+//End duplication
 
 var (
 	smptr unsafe.Pointer //unsafe shared memory pointer
@@ -2776,21 +2805,17 @@ func getScheduledGp(gp *g) *g {
 						dprint(DEBUG, func() { println("gp record status: ",dgStatusStrings[readgstatus(gp)]) })
 						return gp
 					}
+					//TODO does this ever get hit
 					if Record {
 						atomic.Store(&(procchan[DPid].Lock),UNLOCKED) //TODO unlock using scheduler api
 						continue
 					}
+
+					//Should not reach here if record
 					
 					replay:
-					//Don't bother replaying garbage collection, or
-					//finalization
-					if procchan[DPid].RunningRoutine.Gid == 2 ||
-					   procchan[DPid].RunningRoutine.Gid == 3 {
-					   dprint(DEBUG, func() { println("Skipping out on the garbage collector and finalizer threads") })
-					   Running = true
-					   goto top
-				   }
-
+					
+					//If the goroutine in the schedule is ready run it
 					if procchan[DPid].Routines[gp.goid].Gpc == procchan[DPid].RunningRoutine.Gpc &&
 					   procchan[DPid].Routines[gp.goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
 					   dprint(DEBUG, func() { println("Spread Eagle") })
@@ -2852,20 +2877,33 @@ func getScheduledGp(gp *g) *g {
 
 						//This has the potential to kill
 						if readgstatus(gp) == _Gwaiting {
-							if gp.goid == 1 {
-								ready(gp, 0, true)
-							}
+							//stopm()
+							//if gp.goid == 1 {
+							//	ready(gp, 0, true)
+							//}
 
 							dprint(DEBUG, func(){ println("Scheduled Goroutine (",gp.goid,") currently waiting. Busywaiting on routine")})
+							//Don't bother replaying garbage collection, or
+							//finalization if they can not be found
+							if procchan[DPid].RunningRoutine.Gid == 1 ||
+							   procchan[DPid].RunningRoutine.Gid == 2 ||
+							   procchan[DPid].RunningRoutine.Gid == 3 {
+							   dprint(DEBUG, func() { println("Skipping out on the garbage collector and finalizer threads") })
+							   ready(gp, 0, true)
+							   goto replay
+						   	}
 							//retry
 							gp = origgp
 							ResetProcArr(gp)
 							globrunqput(gp)
+							//Here is the potential to die BUG
+							dstopm()
 							goto replay
 						}
 
+
 						dprint(DEBUG, func() { println("Trying to Run (", DPid,",",procchan[DPid].Run,",",procchan[DPid].RunningRoutine.Gpc,")") })
-					} 
+					}// If the g was not found end
 
 						
 
@@ -3090,7 +3128,6 @@ func findallrunnableprocs(gp *g) *g {
 		return gp
 	}
 	ResetProcArr(gp)
-	dstopm()
 	return gp
 }
 
@@ -3105,11 +3142,12 @@ func CheckAndResetProcArr(gp *g) (*g, bool) {
 			globrunqput(gp)
 			gp = ProcArr[i]
 			//TODO potentially remove this
+			/*
 			if readgstatus(gp) == _Gwaiting {
 				dprint(DEBUG, func(){ print("Readying after finding on runque in waiting state\n")} )
 				ready(gp, 0, true)
 				//casgstatus(gp,readgstatus(gp),_Gwaiting)
-			}
+			}*/
 			break
 		}
 	}
@@ -4081,7 +4119,7 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 // Put on gfree list.
 // If local list is too long, transfer a batch to the global list.
 func gfput(_p_ *p, gp *g) {
-	return //DARA TODO Remove
+	//return //DARA TODO Remove
 	if readgstatus(gp) != _Gdead {
 		throw("gfput: bad status (not Gdead)")
 	}
