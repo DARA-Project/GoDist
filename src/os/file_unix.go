@@ -251,15 +251,6 @@ func (f *File) read(b []byte) (n int, err error) {
     }
     n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
-    if syscall.Is_dara_profiling_on() {
-        print("Read : ", n, "bytes")
-        scanner := bufio.NewScanner(Stdin)
-        var input string
-        for input != " " {
-            scanner.Scan()
-            input = scanner.Text()
-        }
-    }
 	return n, err
 }
 
