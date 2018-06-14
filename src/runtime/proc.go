@@ -2638,7 +2638,6 @@ top:
 
 	gp = getScheduledGp(gp)
 
-
 	execute(gp, inheritTime)
 }
 
@@ -2751,6 +2750,7 @@ func initDara() {
 //go:yeswritebarrierrec
 func getScheduledGp(gp *g) *g {
 	origgp := gp
+	end_of_Replay := false
 	if ProcInit {
 		top:
 		for i:= 0; i < len(allgs); i++ {
@@ -2770,6 +2770,8 @@ func getScheduledGp(gp *g) *g {
 				procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
 				procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
 				procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
+			} else if procchan[DPid].Run == -4 {
+				end_of_Replay = true
 			} else {
 				//this is the replay state
 				procchan[DPid].Run = -1
@@ -2781,13 +2783,17 @@ func getScheduledGp(gp *g) *g {
 		}
 
 		dprint(DEBUG, func() {println("Waiting for next goroutine to schedule on process ",DPid) })
+		if end_of_Replay {
+			dprint(DEBUG, func() {println("End of replay")})
+		} else {
+			dprint(DEBUG, func() {println("Continuing")})
+		}
 		//schedtrace(true)
 		//wait for the global scheduler
 		for {
 			if atomic.Cas(&(procchan[DPid].Lock),UNLOCKED,LOCKED) { //TODO use scheduler shared mem
 				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
-					//print("active\n")
-
+					//print("active")
 					//TODO I should stop doing this 
 					if procchan[DPid].Run == -2 {
 						//first instance
@@ -2803,6 +2809,12 @@ func getScheduledGp(gp *g) *g {
 						Record = true
 						Running = true
 						dprint(DEBUG, func() { println("gp record status: ",dgStatusStrings[readgstatus(gp)]) })
+						return gp
+					}
+
+					if procchan[DPid].Run == -4 {
+						atomic.Store(&(procchan[DPid].Lock),UNLOCKED)
+						dprint(DEBUG, func() { println("Finally") })
 						return gp
 					}
 					//TODO does this ever get hit
@@ -2871,6 +2883,7 @@ func getScheduledGp(gp *g) *g {
 							globrunqput(gp)
 							//Set running to true so that the schedule
 							//moves forward
+							// What if this is the last event in the schedule which is essentially the thread dying event. We should have a termination condition
 							Running = true
 							goto top
 						}
