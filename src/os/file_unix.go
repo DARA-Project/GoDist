@@ -248,6 +248,7 @@ func (f *File) read(b []byte) (n int, err error) {
     if syscall.Is_dara_profiling_on() {
         print("[READ] : ")
         println(f.file.name)
+	syscall.Report_Syscall_To_Scheduler(5)
     }
     n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)

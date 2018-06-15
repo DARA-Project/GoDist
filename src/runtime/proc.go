@@ -2690,6 +2690,7 @@ type RoutineInfo struct {
 	Gpc uintptr
 	RoutineCount int
 	FuncInfo [64]byte
+	Syscall int
 }
 
 //End duplication
