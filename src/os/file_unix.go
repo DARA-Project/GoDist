@@ -7,7 +7,7 @@
 package os
 
 import (
-    "bufio"
+//    "bufio"
 	"internal/poll"
 	"runtime"
 	"syscall"
@@ -269,13 +269,13 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
     if syscall.Is_dara_profiling_on() {
-        print("Read : ", n, "bytes")
-        scanner := bufio.NewScanner(Stdin)
-        var input string
-        for input != " " {
-            scanner.Scan()
-            input = scanner.Text()
-        }
+        println("Read : ", n, "bytes")
+        //scanner := bufio.NewScanner(Stdin)
+        //var input string
+        //for input != " " {
+        //    scanner.Scan()
+        //    input = scanner.Text()
+        //}
     }
 	return n, err
 }
@@ -293,13 +293,13 @@ func (f *File) write(b []byte) (n int, err error) {
     n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
     if syscall.Is_dara_profiling_on() {
-        print("Wrote : ", n, "bytes")
-        scanner := bufio.NewScanner(Stdin)
-        var input string
-        for input != " " {
-            scanner.Scan()
-            input = scanner.Text()
-        }
+        println("Wrote : ", n, "bytes")
+        //scanner := bufio.NewScanner(Stdin)
+        //var input string
+        //for input != " " {
+        //    scanner.Scan()
+        //    input = scanner.Text()
+        //}
     }
 	return n, err
 }
@@ -319,13 +319,13 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
     n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
     if syscall.Is_dara_profiling_on() {
-        print("Wrote : ", n, "bytes")
-        scanner := bufio.NewScanner(Stdin)
-        var input string
-        for input != " " {
-            scanner.Scan()
-            input = scanner.Text()
-        }
+        println("Wrote : ", n, "bytes")
+        //scanner := bufio.NewScanner(Stdin)
+        //var input string
+        //for input != " " {
+        //    scanner.Scan()
+        //    input = scanner.Text()
+        //}
     }
 	return n, err
 }
