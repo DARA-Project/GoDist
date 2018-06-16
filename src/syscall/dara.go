@@ -11,7 +11,6 @@ import (
 type DaraProc struct {
 	Lock int32
 	Run int
-	TotalRoutines int
 	RunningRoutine RoutineInfo
 	Routines [MAXGOROUTINES]RoutineInfo
 }

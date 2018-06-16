@@ -2679,7 +2679,6 @@ var dgStatusStrings = [...]string{
 type DaraProc struct {
 	Lock uint32
 	Run int
-	TotalRoutines int
 	RunningRoutine RoutineInfo
 	Routines [MAXGOROUTINES]RoutineInfo
 }
