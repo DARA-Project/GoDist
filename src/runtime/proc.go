@@ -2680,7 +2680,6 @@ var dgStatusStrings = [...]string{
 type DaraProc struct {
 	Lock uint32
 	Run int
-	TotalRoutines int
 	RunningRoutine RoutineInfo
 	Routines [MAXGOROUTINES]RoutineInfo
 }
@@ -2692,6 +2691,7 @@ type RoutineInfo struct {
 	RoutineCount int
 	FuncInfo [64]byte
 }
+
 
 //End duplication
 
@@ -2795,7 +2795,6 @@ func getScheduledGp(gp *g) *g {
 						Running = true
 						return gp
 					}
-
 					if procchan[DPid].Run == -3 {
 						//Record mode, let the goruntime do whatever
 						//it wants and report back to the CS
