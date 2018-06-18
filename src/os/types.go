@@ -12,6 +12,7 @@ import (
 // Getpagesize returns the underlying system's memory page size.
 func Getpagesize() int {
     // DARA Instrumentation
+    // This doesn't actually trap into the OS. Provided by the runtime.
     println("[GETPAGESIZE]")
     return syscall.Getpagesize()
 }

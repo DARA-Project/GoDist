@@ -212,13 +212,14 @@ func (f *File) WriteString(s string) (n int, err error) {
 // bits (before umask).
 // If there is an error, it will be of type *PathError.
 func Mkdir(name string, perm FileMode) error {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[MKDIR] : ")
-        print(name)
-        print(" ")
-        println(perm)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[MKDIR] : ")
+		print(name)
+		print(" ")
+		println(perm)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_MKDIR)
+	}
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
 
 	if e != nil {
@@ -236,11 +237,12 @@ func Mkdir(name string, perm FileMode) error {
 // Chdir changes the current working directory to the named directory.
 // If there is an error, it will be of type *PathError.
 func Chdir(dir string) error {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[CHDIR] : ")
-        println(dir)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[CHDIR] : ")
+		println(dir)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_CHDIR)
+	}
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory
 		return &PathError{"chdir", dir, e}

@@ -22,9 +22,9 @@ import (
 //
 // Executable is not supported on nacl.
 func Executable() (string, error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[EXECUTABLE]")
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[EXECUTABLE]")
+	}
 	return executable()
 }
