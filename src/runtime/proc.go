@@ -1668,7 +1668,6 @@ func newextram() {
 
 // oneNewExtraM allocates an m and puts it on the extra list.
 func oneNewExtraM() {
-	print("ONE NEW EXTRA M")
 	// Create extra goroutine locked to extra m.
 	// The goroutine is the context in which the cgo callback will run.
 	// The sched.pc will never be returned to, but setting it to
@@ -2815,7 +2814,8 @@ func getScheduledGp(gp *g) *g {
 					if procchan[DPid].Run == -4 {
 						atomic.Store(&(procchan[DPid].Lock),UNLOCKED)
 						dprint(DEBUG, func() { println("Finally") })
-						return gp
+						//TODO exit without panicing
+						for { exit(0) }
 					}
 					//TODO does this ever get hit
 					if Record {
