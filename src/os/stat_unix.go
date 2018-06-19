@@ -14,10 +14,11 @@ import (
 // If there is an error, it will be of type *PathError.
 func (f *File) Stat() (FileInfo, error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[FSTAT] : ")
-        println(f.file.name)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[FSTAT] : ")
+		println(f.file.name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_FSTAT)
+	}
 	if f == nil {
 		return nil, ErrInvalid
 	}
@@ -33,10 +34,11 @@ func (f *File) Stat() (FileInfo, error) {
 // statNolog stats a file with no test logging.
 func statNolog(name string) (FileInfo, error) {
 	var fs fileStat
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[STAT] : " + name)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[STAT] : " + name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_STAT)
+	}
 	err := syscall.Stat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"stat", name, err}
@@ -48,10 +50,11 @@ func statNolog(name string) (FileInfo, error) {
 // lstatNolog lstats a file with no test logging.
 func lstatNolog(name string) (FileInfo, error) {
 	var fs fileStat
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[LSTAT] : " + name)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[LSTAT] : " + name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_LSTAT)
+	}
 	err := syscall.Lstat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"lstat", name, err}

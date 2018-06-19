@@ -17,13 +17,13 @@ const (
 )
 
 func (f *File) readdir(n int) (fi []FileInfo, err error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[Readdir] : ")
-        print(f.file.name)
-        print(" ")
-        println(n)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[Readdir] : ")
+		print(f.file.name)
+		print(" ")
+		println(n)
+	}
 	dirname := f.name
 	if dirname == "" {
 		dirname = "."
@@ -51,13 +51,13 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 }
 
 func (f *File) readdirnames(n int) (names []string, err error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[Readdirnames] : ")
-        print(f.file.name)
-        print(" ")
-        println(n)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[Readdirnames] : ")
+		print(f.file.name)
+		print(" ")
+		println(n)
+	}
 	// If this file has no dirinfo, create one.
 	if f.dirinfo == nil {
 		f.dirinfo = new(dirInfo)

@@ -28,44 +28,48 @@ func runtime_args() []string // in package runtime
 //
 // On Windows, it returns -1.
 func Getuid() int {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[GETUID]")
-    }
-    return syscall.Getuid()
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[GETUID]")
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETUID)
+	}
+	return syscall.Getuid()
 }
 
 // Geteuid returns the numeric effective user id of the caller.
 //
 // On Windows, it returns -1.
 func Geteuid() int {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[GETEUID]")
-    }
-    return syscall.Geteuid()
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[GETEUID]")
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETEUID)
+	}
+	return syscall.Geteuid()
 }
 
 // Getgid returns the numeric group id of the caller.
 //
 // On Windows, it returns -1.
 func Getgid() int {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[GETGID]")
-    }
-    return syscall.Getgid()
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[GETGID]")
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETGID)
+	}
+	return syscall.Getgid()
 }
 
 // Getegid returns the numeric effective group id of the caller.
 //
 // On Windows, it returns -1.
 func Getegid() int {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[GETEGID]")
-    }
-    return syscall.Getegid()
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[GETEGID]")
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETEGID)
+	}
+	return syscall.Getegid()
 }
 
 // Getgroups returns a list of the numeric ids of groups that the caller belongs to.
@@ -73,10 +77,11 @@ func Getegid() int {
 // On Windows, it returns syscall.EWINDOWS. See the os/user package
 // for a possible alternative.
 func Getgroups() ([]int, error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[GETGROUPS]")
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[GETGROUPS]")
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETGROUPS)
+	}
 	gids, e := syscall.Getgroups()
 	return gids, NewSyscallError("getgroups", e)
 }
@@ -85,10 +90,11 @@ func Getgroups() ([]int, error) {
 // Conventionally, code zero indicates success, non-zero an error.
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
-    if syscall.Is_dara_profiling_on() {
-        print("[EXIT] : ")
-        println(code)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[EXIT] : ")
+		println(code)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_EXIT)
+	}
 	if code == 0 {
 		// Give race detector a chance to fail the program.
 		// Racy programs do not have the right to finish successfully.

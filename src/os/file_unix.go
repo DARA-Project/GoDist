@@ -34,14 +34,15 @@ func rename(oldname, newname string) error {
 		}
 		return &LinkError{"rename", oldname, newname, syscall.EEXIST}
 	}
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[RENAME] : ")
-        print(oldname)
-        print(" ")
-        println(newname)
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+	    print("[RENAME] : ")
+	    print(oldname)
+	    print(" ")
+	    println(newname)
+	    syscall.Report_Syscall_To_Scheduler(syscall.SYS_RENAME)
 	}
-    err = syscall.Rename(oldname, newname)
+	err = syscall.Rename(oldname, newname)
 	if err != nil {
 		return &LinkError{"rename", oldname, newname, err}
 	}
@@ -170,14 +171,15 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 		}
 	}
 
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[OPEN] : ")
-        print(name + " ")
-        print(flag)
-        print(" ")
-        println(perm)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[OPEN] : ")
+		print(name + " ")
+		print(flag)
+		print(" ")
+		println(perm)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_OPEN)
+	}
 	var r int
 	for {
 		var e error
@@ -223,11 +225,12 @@ func (file *file) close() error {
 	if file == nil {
 		return syscall.EINVAL
 	}
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[CLOSE] : ")
-        println(file.name)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		print("[CLOSE] : ")
+		println(file.name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_CLOSE)
+	}
 	var err error
 	if e := file.pfd.Close(); e != nil {
 		if e == poll.ErrFileClosing {
@@ -245,12 +248,15 @@ func (file *file) close() error {
 // It returns the number of bytes read and an error, if any.
 func (f *File) read(b []byte) (n int, err error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[READ] : ")
-        println(f.file.name)
-	syscall.Report_Syscall_To_Scheduler(5)
-    }
-    n, err = f.pfd.Read(b)
+	if syscall.Is_dara_profiling_on() {
+	    print("[READ] : ")
+	    println(f.file.name)
+	    syscall.Report_Syscall_To_Scheduler(syscall.SYS_READ)
+	}
+	if syscall.Is_dara_profiling_on() {
+		runtime.Gosched()
+	}
+	n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
 	return n, err
 }
@@ -260,23 +266,15 @@ func (f *File) read(b []byte) (n int, err error) {
 // EOF is signaled by a zero count with err set to nil.
 func (f *File) pread(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[PREAD] : ")
-        print(f.file.name)
-        print(" ")
-        println(off)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[PREAD] : ")
+		print(f.file.name)
+		print(" ")
+		println(off)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_PREAD64)
+	}
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
-    if syscall.Is_dara_profiling_on() {
-        println("Read : ", n, "bytes")
-        //scanner := bufio.NewScanner(Stdin)
-        //var input string
-        //for input != " " {
-        //    scanner.Scan()
-        //    input = scanner.Text()
-        //}
-    }
 	return n, err
 }
 
@@ -284,23 +282,15 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) write(b []byte) (n int, err error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[WRITE] : ")
-        print(f.file.name)
-        print(" ")
-        println(string(b[:len(b)]))
+	if syscall.Is_dara_profiling_on() {
+		print("[WRITE] : ")
+		print(f.file.name)
+		print(" ")
+		println(string(b[:len(b)]))
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_WRITE)
 	}
-    n, err = f.pfd.Write(b)
+	n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
-    if syscall.Is_dara_profiling_on() {
-        println("Wrote : ", n, "bytes")
-        //scanner := bufio.NewScanner(Stdin)
-        //var input string
-        //for input != " " {
-        //    scanner.Scan()
-        //    input = scanner.Text()
-        //}
-    }
 	return n, err
 }
 
@@ -308,25 +298,17 @@ func (f *File) write(b []byte) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[PWRITE] : ")
-        print(f.file.name)
-        print(" ")
-        print(string(b[:len(b)]))
-        print(" ")
-        print(off)
+	if syscall.Is_dara_profiling_on() {
+		print("[PWRITE] : ")
+		print(f.file.name)
+		print(" ")
+		print(string(b[:len(b)]))
+		print(" ")
+		print(off)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_PWRITE64)
 	}
-    n, err = f.pfd.Pwrite(b, off)
+	n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
-    if syscall.Is_dara_profiling_on() {
-        println("Wrote : ", n, "bytes")
-        //scanner := bufio.NewScanner(Stdin)
-        //var input string
-        //for input != " " {
-        //    scanner.Scan()
-        //    input = scanner.Text()
-        //}
-    }
 	return n, err
 }
 
@@ -336,15 +318,16 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 // It returns the new offset and an error, if any.
 func (f *File) seek(offset int64, whence int) (ret int64, err error) {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[SEEK] : ")
-        print(f.file.name)
-        print(" ")
-        print(offset)
-        print(" ")
-        println(whence)
+	if syscall.Is_dara_profiling_on() {
+		print("[SEEK] : ")
+		print(f.file.name)
+		print(" ")
+		print(offset)
+		print(" ")
+		println(whence)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_LSEEK)
 	}
-    ret, err = f.pfd.Seek(offset, whence)
+	ret, err = f.pfd.Seek(offset, whence)
 	runtime.KeepAlive(f)
 	return ret, err
 }
@@ -354,12 +337,13 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 // If there is an error, it will be of type *PathError.
 func Truncate(name string, size int64) error {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[TRUNCATE] : ")
-        print(name)
-        print(" ")
-        println(size)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[TRUNCATE] : ")
+		print(name)
+		print(" ")
+		println(size)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_TRUNCATE)
+	}
 	if e := syscall.Truncate(name, size); e != nil {
 		return &PathError{"truncate", name, e}
 	}
@@ -373,19 +357,21 @@ func Remove(name string) error {
 	// whether name is a file or directory.
 	// Try both: it is cheaper on average than
 	// doing a Stat plus the right one
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[REMOVE]")
-        println("\t[UNLINK] : " + name)
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+		println("[REMOVE]")
+		println("\t[UNLINK] : " + name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_UNLINK)
+	}
 	e := syscall.Unlink(name)
 	if e == nil {
 		return nil
 	}
-    if syscall.Is_dara_profiling_on() {
-        println("\t[RMDIR] : " + name)
+	if syscall.Is_dara_profiling_on() {
+		println("\t[RMDIR] : " + name)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_RMDIR)
 	}
-    e1 := syscall.Rmdir(name)
+	e1 := syscall.Rmdir(name)
 	if e1 == nil {
 		return nil
 	}
@@ -421,12 +407,13 @@ func tempDir() string {
 // If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[LINK] : ")
-        print(oldname)
-        print(" ")
-        println(newname)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[LINK] : ")
+		print(oldname)
+		print(" ")
+		println(newname)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_LINK)
+	}
 	e := syscall.Link(oldname, newname)
 	if e != nil {
 		return &LinkError{"link", oldname, newname, e}
@@ -438,12 +425,13 @@ func Link(oldname, newname string) error {
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
     // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[SYMLINK] : ")
-        print(oldname)
-        print(" ")
-        println(newname)
-    }
+	if syscall.Is_dara_profiling_on() {
+		print("[SYMLINK] : ")
+		print(oldname)
+		print(" ")
+		println(newname)
+		syscall.Report_Syscall_To_Scheduler(syscall.SYS_SYMLINK)
+	}
 	e := syscall.Symlink(oldname, newname)
 	if e != nil {
 		return &LinkError{"symlink", oldname, newname, e}
