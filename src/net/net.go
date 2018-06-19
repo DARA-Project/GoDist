@@ -79,7 +79,6 @@ On Windows, the resolver always uses C library functions, such as GetAddrInfo an
 package net
 
 import (
-    "bufio"
 	"context"
 	"errors"
 	"internal/poll"
@@ -185,14 +184,6 @@ func (c *conn) Read(b []byte) (int, error) {
 	if err != nil && err != io.EOF {
 		err = &OpError{Op: "read", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
 	}
-    print("Read ")
-    println(n)
-    scanner := bufio.NewScanner(os.Stdin)
-    var input string
-    for input != " "{
-        scanner.Scan()
-        input = scanner.Text()
-    }
 	return n, err
 }
 
