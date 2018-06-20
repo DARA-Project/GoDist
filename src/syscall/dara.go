@@ -122,11 +122,11 @@ func Report_Syscall_To_Scheduler(syscallID int) {
 		if !isDaraInitialized {
 			initDara()
 		}
-	}
-	DPid = get_Dara_Pid()
-	if DPid != -1 {
-		println("Reporting syscall #",syscallID)
-		procchan[DPid].RunningRoutine.Syscall = syscallID
+		DPid = get_Dara_Pid()
+		if DPid != -1 {
+			println("Reporting syscall #",syscallID)
+			procchan[DPid].RunningRoutine.Syscall = syscallID
+		}
 	}
 }
 

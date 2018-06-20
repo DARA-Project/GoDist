@@ -27,7 +27,7 @@ func Getwd() (dir string, err error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETWD]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETCWD)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETWD)
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return syscall.Getwd()

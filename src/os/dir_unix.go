@@ -23,6 +23,7 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		print(f.file.name)
 		print(" ")
 		println(n)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_READDIR)
 	}
 	dirname := f.name
 	if dirname == "" {
@@ -57,6 +58,7 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 		print(f.file.name)
 		print(" ")
 		println(n)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_READDIRNAMES)
 	}
 	// If this file has no dirinfo, create one.
 	if f.dirinfo == nil {

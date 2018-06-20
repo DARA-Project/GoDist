@@ -40,7 +40,7 @@ func rename(oldname, newname string) error {
 	    print(oldname)
 	    print(" ")
 	    println(newname)
-	    syscall.Report_Syscall_To_Scheduler(syscall.SYS_RENAME)
+	    syscall.Report_Syscall_To_Scheduler(syscall.DSYS_RENAME)
 	}
 	err = syscall.Rename(oldname, newname)
 	if err != nil {
@@ -178,7 +178,7 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 		print(flag)
 		print(" ")
 		println(perm)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_OPEN)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_OPEN)
 	}
 	var r int
 	for {
@@ -229,7 +229,7 @@ func (file *file) close() error {
 	if syscall.Is_dara_profiling_on() {
 		print("[CLOSE] : ")
 		println(file.name)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_CLOSE)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_CLOSE)
 	}
 	var err error
 	if e := file.pfd.Close(); e != nil {
@@ -251,7 +251,7 @@ func (f *File) read(b []byte) (n int, err error) {
 	if syscall.Is_dara_profiling_on() {
 	    print("[READ] : ")
 	    println(f.file.name)
-	    syscall.Report_Syscall_To_Scheduler(syscall.SYS_READ)
+	    syscall.Report_Syscall_To_Scheduler(syscall.DSYS_READ)
 	}
 	if syscall.Is_dara_profiling_on() {
 		runtime.Gosched()
@@ -271,7 +271,7 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 		print(f.file.name)
 		print(" ")
 		println(off)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_PREAD64)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_PREAD64)
 	}
 	n, err = f.pfd.Pread(b, off)
 	runtime.KeepAlive(f)
@@ -287,7 +287,7 @@ func (f *File) write(b []byte) (n int, err error) {
 		print(f.file.name)
 		print(" ")
 		println(string(b[:len(b)]))
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_WRITE)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_WRITE)
 	}
 	n, err = f.pfd.Write(b)
 	runtime.KeepAlive(f)
@@ -305,7 +305,7 @@ func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 		print(string(b[:len(b)]))
 		print(" ")
 		print(off)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_PWRITE64)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_PWRITE64)
 	}
 	n, err = f.pfd.Pwrite(b, off)
 	runtime.KeepAlive(f)
@@ -325,7 +325,7 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 		print(offset)
 		print(" ")
 		println(whence)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_LSEEK)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_LSEEK)
 	}
 	ret, err = f.pfd.Seek(offset, whence)
 	runtime.KeepAlive(f)
@@ -342,7 +342,7 @@ func Truncate(name string, size int64) error {
 		print(name)
 		print(" ")
 		println(size)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_TRUNCATE)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_TRUNCATE)
 	}
 	if e := syscall.Truncate(name, size); e != nil {
 		return &PathError{"truncate", name, e}
@@ -361,7 +361,7 @@ func Remove(name string) error {
 	if syscall.Is_dara_profiling_on() {
 		println("[REMOVE]")
 		println("\t[UNLINK] : " + name)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_UNLINK)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_UNLINK)
 	}
 	e := syscall.Unlink(name)
 	if e == nil {
@@ -369,7 +369,7 @@ func Remove(name string) error {
 	}
 	if syscall.Is_dara_profiling_on() {
 		println("\t[RMDIR] : " + name)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_RMDIR)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_RMDIR)
 	}
 	e1 := syscall.Rmdir(name)
 	if e1 == nil {
@@ -412,7 +412,7 @@ func Link(oldname, newname string) error {
 		print(oldname)
 		print(" ")
 		println(newname)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_LINK)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_LINK)
 	}
 	e := syscall.Link(oldname, newname)
 	if e != nil {
@@ -430,7 +430,7 @@ func Symlink(oldname, newname string) error {
 		print(oldname)
 		print(" ")
 		println(newname)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_SYMLINK)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_SYMLINK)
 	}
 	e := syscall.Symlink(oldname, newname)
 	if e != nil {

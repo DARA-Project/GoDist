@@ -25,6 +25,7 @@ func Executable() (string, error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[EXECUTABLE]")
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_EXECUTABLE)
 	}
 	return executable()
 }

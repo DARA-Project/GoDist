@@ -39,7 +39,7 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 	if syscall.Is_dara_profiling_on() {
 		print("[WAIT] : ")
 		println(p.Pid)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_WAIT4)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_WAIT4)
 	}
 	pid1, e := syscall.Wait4(p.Pid, &status, 0, &rusage)
 	if e != nil {
@@ -80,7 +80,7 @@ func (p *Process) signal(sig Signal) error {
 		print(p.Pid)
 		print(" ")
 		println(s.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_KILL)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_KILL)
 	}
 	if e := syscall.Kill(p.Pid, s); e != nil {
 		if e == syscall.ESRCH {

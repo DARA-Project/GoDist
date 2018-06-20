@@ -72,7 +72,7 @@ func Getpid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETPID)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPID)
 	}
 	return syscall.Getpid()
 }
@@ -82,7 +82,7 @@ func Getppid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETPPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETPPID)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPPID)
 	}
 	return syscall.Getppid()
 }

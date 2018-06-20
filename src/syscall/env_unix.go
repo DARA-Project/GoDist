@@ -55,10 +55,11 @@ func copyenv() {
 }
 
 func Unsetenv(key string) error {
-    // DARA Instrumentation
-    if (Darainenv()) {
-        println("[UNSETENV] : " + key)
-    }
+	// DARA Instrumentation
+	if (Darainenv()) {
+		println("[UNSETENV] : " + key)
+		Report_Syscall_To_Scheduler(DSYS_UNSETENV)
+	}
 	envOnce.Do(copyenv)
 
 	envLock.Lock()
@@ -73,10 +74,10 @@ func Unsetenv(key string) error {
 }
 
 func Darainenv() bool {
-    envOnce.Do(copyenv)
+	envOnce.Do(copyenv)
 
-    envLock.RLock()
-    defer envLock.RUnlock()
+	envLock.RLock()
+	defer envLock.RUnlock()
 	i, ok := env["DARA_PROFILING"]
 	if !ok {
 		return false
@@ -91,10 +92,11 @@ func Darainenv() bool {
 }
 
 func Getenv(key string) (value string, found bool) {
-    // DARA Instrumentation
-    if (key != "DARA_PROFILING" && Darainenv()) {
-        println("[GETENV] : " + key)
-    }
+	// DARA Instrumentation
+	if (key != "DARA_PROFILING" && key != "DARAON" && key != "DARAPID" && Darainenv()) {
+		println("[GETENV] : " + key)
+		Report_Syscall_To_Scheduler(DSYS_GETENV)
+	}
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return "", false
@@ -117,10 +119,11 @@ func Getenv(key string) (value string, found bool) {
 }
 
 func Setenv(key, value string) error {
-    // DARA Instrumentation
-    if (Darainenv()) {
-        println("[SETENV] : " + key +  " "  + value)
-    }
+	// DARA Instrumentation
+	if (Darainenv()) {
+		println("[SETENV] : " + key +  " "  + value)
+		Report_Syscall_To_Scheduler(DSYS_SETENV)
+	}
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
 		return EINVAL
@@ -153,11 +156,12 @@ func Setenv(key, value string) error {
 }
 
 func Clearenv() {
-    // DARA Instrumentation
-    if (Darainenv()) {
-        println("[CLEARENV]")
+	// DARA Instrumentation
+	if (Darainenv()) {
+		println("[CLEARENV]")
+		Report_Syscall_To_Scheduler(DSYS_CLEARENV)
 	}
-    envOnce.Do(copyenv) // prevent copyenv in Getenv/Setenv
+	envOnce.Do(copyenv) // prevent copyenv in Getenv/Setenv
 
 	envLock.Lock()
 	defer envLock.Unlock()
@@ -170,11 +174,12 @@ func Clearenv() {
 }
 
 func Environ() []string {
-    // DARA Instrumentation
-    if (Darainenv()) {
-        println("[ENVIRON]")
+	// DARA Instrumentation
+	if (Darainenv()) {
+		println("[ENVIRON]")
+		Report_Syscall_To_Scheduler(DSYS_ENVIRON)
 	}
-    envOnce.Do(copyenv)
+	envOnce.Do(copyenv)
 	envLock.RLock()
 	defer envLock.RUnlock()
 	a := make([]string, 0, len(envs))

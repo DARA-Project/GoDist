@@ -13,8 +13,11 @@ import (
 func Getpagesize() int {
     // DARA Instrumentation
     // This doesn't actually trap into the OS. Provided by the runtime.
-    println("[GETPAGESIZE]")
-    return syscall.Getpagesize()
+	if syscall.Is_dara_profiling_on() {
+		println("[GETPAGESIZE]")
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPAGESIZE)
+	}
+	return syscall.Getpagesize()
 }
 
 // File represents an open file descriptor.

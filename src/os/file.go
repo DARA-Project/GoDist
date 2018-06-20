@@ -218,7 +218,7 @@ func Mkdir(name string, perm FileMode) error {
 		print(name)
 		print(" ")
 		println(perm)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_MKDIR)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_MKDIR)
 	}
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
 
@@ -241,7 +241,7 @@ func Chdir(dir string) error {
 	if syscall.Is_dara_profiling_on() {
 		print("[CHDIR] : ")
 		println(dir)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_CHDIR)
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_CHDIR)
 	}
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory

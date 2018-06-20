@@ -1042,10 +1042,11 @@ func now() (sec int64, nsec int32, mono int64)
 
 // Now returns the current local time.
 func Now() Time {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        println("[TIME.NOW]")
-    }
+	// DARA Instrumentation
+	if syscall.Is_dara_profiling_on() {
+	    println("[TIME.NOW]")
+		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_TIMENOW)
+	}
 	sec, nsec, mono := now()
 	sec += unixToInternal - minWall
 	if uint64(sec)>>33 != 0 {
