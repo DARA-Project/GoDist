@@ -80,6 +80,7 @@ package net
 
 import (
 	"context"
+	"dara"
 	"errors"
 	"internal/poll"
 	"io"
@@ -176,7 +177,7 @@ func (c *conn) Read(b []byte) (int, error) {
 		print(c.fd.laddr.String())
 		print(" ")
 		println(c.fd.raddr.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_READ)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_READ)
 	}
 	if !c.ok() {
 		return 0, syscall.EINVAL
@@ -198,7 +199,7 @@ func (c *conn) Write(b []byte) (int, error) {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(string(b[:]))
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_WRITE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_WRITE)
 	}
 	if !c.ok() {
 		return 0, syscall.EINVAL
@@ -218,7 +219,7 @@ func (c *conn) Close() error {
 		print(c.fd.laddr.String())
 		print(" ")
 		println(c.fd.raddr.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_CLOSE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_CLOSE)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -260,7 +261,7 @@ func (c *conn) SetDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_SETDEADLINE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETDEADLINE)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -281,7 +282,7 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_SETREADDEADLINE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADDEADLINE)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -302,7 +303,7 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_SETWRITEDEADLINE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEDEADLINE)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -322,7 +323,7 @@ func (c *conn) SetReadBuffer(bytes int) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(bytes)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_SETREADBUFFER)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADBUFFER)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -342,7 +343,7 @@ func (c *conn) SetWriteBuffer(bytes int) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(bytes)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_NET_SETWRITEBUFFER)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEBUFFER)
 	}
 	if !c.ok() {
 		return syscall.EINVAL

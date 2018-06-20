@@ -8,6 +8,7 @@ package net
 
 import (
 	"context"
+	"dara"
 	"io"
 	"os"
 	"syscall"
@@ -156,7 +157,7 @@ func listenTCP(ctx context.Context, network string, laddr *TCPAddr) (*TCPListene
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[LISTEN TCP]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_LISTEN_TCP)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_LISTEN_TCP)
 	}
 	fd, err := internetSocket(ctx, network, laddr, nil, syscall.SOCK_STREAM, 0, "listen")
 	if err != nil {

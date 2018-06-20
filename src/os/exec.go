@@ -5,6 +5,7 @@
 package os
 
 import (
+	"dara"
 	"internal/testlog"
 	"runtime"
 	"sync"
@@ -72,7 +73,7 @@ func Getpid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETPID)
 	}
 	return syscall.Getpid()
 }
@@ -82,7 +83,7 @@ func Getppid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETPPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPPID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID)
 	}
 	return syscall.Getppid()
 }

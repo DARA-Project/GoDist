@@ -5,6 +5,7 @@
 package os
 
 import (
+	"dara"
 	"syscall"
 	"time"
 )
@@ -15,7 +16,7 @@ func Getpagesize() int {
     // This doesn't actually trap into the OS. Provided by the runtime.
 	if syscall.Is_dara_profiling_on() {
 		println("[GETPAGESIZE]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETPAGESIZE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETPAGESIZE)
 	}
 	return syscall.Getpagesize()
 }

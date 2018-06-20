@@ -8,6 +8,7 @@ package net
 
 import (
 	"context"
+	"dara"
 	"internal/poll"
 	"os"
 	"syscall"
@@ -42,7 +43,7 @@ func socket(ctx context.Context, net string, family, sotype, proto int, ipv6only
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[SOCKET]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_SOCKET)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_SOCKET)
 	}
 	s, err := sysSocket(family, sotype, proto)
 	if err != nil {

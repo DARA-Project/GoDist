@@ -7,6 +7,7 @@
 package os
 
 import (
+	"dara"
 	"runtime"
 	"syscall"
 )
@@ -31,7 +32,7 @@ func Getuid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETUID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETUID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETUID)
 	}
 	return syscall.Getuid()
 }
@@ -43,7 +44,7 @@ func Geteuid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETEUID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETEUID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETEUID)
 	}
 	return syscall.Geteuid()
 }
@@ -55,7 +56,7 @@ func Getgid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETGID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETGID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETGID)
 	}
 	return syscall.Getgid()
 }
@@ -67,7 +68,7 @@ func Getegid() int {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETEGID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETEGID)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETEGID)
 	}
 	return syscall.Getegid()
 }
@@ -80,7 +81,7 @@ func Getgroups() ([]int, error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[GETGROUPS]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_GETGROUPS)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETGROUPS)
 	}
 	gids, e := syscall.Getgroups()
 	return gids, NewSyscallError("getgroups", e)
@@ -93,7 +94,7 @@ func Exit(code int) {
 	if syscall.Is_dara_profiling_on() {
 		print("[EXIT] : ")
 		println(code)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_EXIT)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_EXIT)
 	}
 	if code == 0 {
 		// Give race detector a chance to fail the program.

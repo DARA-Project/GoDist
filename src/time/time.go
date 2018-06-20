@@ -71,6 +71,7 @@
 //
 package time
 
+import "dara"
 import "errors"
 import "syscall"
 
@@ -1045,7 +1046,7 @@ func Now() Time {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 	    println("[TIME.NOW]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_TIMENOW)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_TIMENOW)
 	}
 	sec, nsec, mono := now()
 	sec += unixToInternal - minWall

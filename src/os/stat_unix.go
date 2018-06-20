@@ -7,6 +7,7 @@
 package os
 
 import (
+	"dara"
 	"syscall"
 )
 
@@ -17,7 +18,7 @@ func (f *File) Stat() (FileInfo, error) {
 	if syscall.Is_dara_profiling_on() {
 		print("[FSTAT] : ")
 		println(f.file.name)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_FSTAT)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_FSTAT)
 	}
 	if f == nil {
 		return nil, ErrInvalid
@@ -37,7 +38,7 @@ func statNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[STAT] : " + name)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_STAT)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_STAT)
 	}
 	err := syscall.Stat(name, &fs.sys)
 	if err != nil {
@@ -53,7 +54,7 @@ func lstatNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[LSTAT] : " + name)
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_LSTAT)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_LSTAT)
 	}
 	err := syscall.Lstat(name, &fs.sys)
 	if err != nil {

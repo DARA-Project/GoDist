@@ -4,6 +4,7 @@
 
 package os
 
+import "dara"
 import "syscall"
 
 // Pipe returns a connected pair of Files; reads from r return bytes written to w.
@@ -13,7 +14,7 @@ func Pipe() (r *File, w *File, err error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[PIPE]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_PIPE2)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_PIPE2)
 	}
 	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	// pipe2 was added in 2.6.27 and our minimum requirement is 2.6.23, so it

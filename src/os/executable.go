@@ -5,7 +5,8 @@
 package os
 
 import (
-    "syscall"
+	"dara"
+	"syscall"
 )
 
 // Executable returns the path name for the executable that started
@@ -25,7 +26,7 @@ func Executable() (string, error) {
 	// DARA Instrumentation
 	if syscall.Is_dara_profiling_on() {
 		println("[EXECUTABLE]")
-		syscall.Report_Syscall_To_Scheduler(syscall.DSYS_EXECUTABLE)
+		syscall.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE)
 	}
 	return executable()
 }

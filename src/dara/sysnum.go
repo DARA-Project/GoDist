@@ -1,4 +1,4 @@
-package syscall
+package dara
 
 // Dara Syscall Numbers. These are the numbers used for identification of syscalls by the scheduler.
 const (
