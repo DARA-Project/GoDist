@@ -30,9 +30,9 @@ func runtime_args() []string // in package runtime
 // On Windows, it returns -1.
 func Getuid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETUID]")
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETUID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETUID)
 	}
 	return syscall.Getuid()
 }
@@ -42,9 +42,9 @@ func Getuid() int {
 // On Windows, it returns -1.
 func Geteuid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETEUID]")
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETEUID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETEUID)
 	}
 	return syscall.Geteuid()
 }
@@ -54,9 +54,9 @@ func Geteuid() int {
 // On Windows, it returns -1.
 func Getgid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETGID]")
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETGID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETGID)
 	}
 	return syscall.Getgid()
 }
@@ -66,9 +66,9 @@ func Getgid() int {
 // On Windows, it returns -1.
 func Getegid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETEGID]")
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETEGID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETEGID)
 	}
 	return syscall.Getegid()
 }
@@ -79,9 +79,9 @@ func Getegid() int {
 // for a possible alternative.
 func Getgroups() ([]int, error) {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETGROUPS]")
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_GETGROUPS)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETGROUPS)
 	}
 	gids, e := syscall.Getgroups()
 	return gids, NewSyscallError("getgroups", e)
@@ -91,10 +91,10 @@ func Getgroups() ([]int, error) {
 // Conventionally, code zero indicates success, non-zero an error.
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		print("[EXIT] : ")
 		println(code)
-		syscall.Report_Syscall_To_Scheduler(dara.DSYS_EXIT)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXIT)
 	}
 	if code == 0 {
 		// Give race detector a chance to fail the program.

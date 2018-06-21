@@ -9,6 +9,7 @@
 package syscall
 
 import "dara"
+import "runtime"
 import "sync"
 
 var (
@@ -59,7 +60,7 @@ func Unsetenv(key string) error {
 	// DARA Instrumentation
 	if (Darainenv()) {
 		println("[UNSETENV] : " + key)
-		Report_Syscall_To_Scheduler(dara.DSYS_UNSETENV)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_UNSETENV)
 	}
 	envOnce.Do(copyenv)
 
@@ -96,7 +97,7 @@ func Getenv(key string) (value string, found bool) {
 	// DARA Instrumentation
 	if (key != "DARA_PROFILING" && key != "DARAON" && key != "DARAPID" && Darainenv()) {
 		println("[GETENV] : " + key)
-		Report_Syscall_To_Scheduler(dara.DSYS_GETENV)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETENV)
 	}
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
@@ -123,7 +124,7 @@ func Setenv(key, value string) error {
 	// DARA Instrumentation
 	if (Darainenv()) {
 		println("[SETENV] : " + key +  " "  + value)
-		Report_Syscall_To_Scheduler(dara.DSYS_SETENV)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETENV)
 	}
 	envOnce.Do(copyenv)
 	if len(key) == 0 {
@@ -160,7 +161,7 @@ func Clearenv() {
 	// DARA Instrumentation
 	if (Darainenv()) {
 		println("[CLEARENV]")
-		Report_Syscall_To_Scheduler(dara.DSYS_CLEARENV)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CLEARENV)
 	}
 	envOnce.Do(copyenv) // prevent copyenv in Getenv/Setenv
 
@@ -178,7 +179,7 @@ func Environ() []string {
 	// DARA Instrumentation
 	if (Darainenv()) {
 		println("[ENVIRON]")
-		Report_Syscall_To_Scheduler(dara.DSYS_ENVIRON)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_ENVIRON)
 	}
 	envOnce.Do(copyenv)
 	envLock.RLock()
