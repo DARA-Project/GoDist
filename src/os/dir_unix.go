@@ -7,6 +7,7 @@
 package os
 
 import (
+	"dara"
 	"io"
 	"runtime"
 	"syscall"
@@ -18,11 +19,12 @@ const (
 
 func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		print("[Readdir] : ")
 		print(f.file.name)
 		print(" ")
 		println(n)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR)
 	}
 	dirname := f.name
 	if dirname == "" {
@@ -52,11 +54,12 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 
 func (f *File) readdirnames(n int) (names []string, err error) {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		print("[Readdirnames] : ")
 		print(f.file.name)
 		print(" ")
 		println(n)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIRNAMES)
 	}
 	// If this file has no dirinfo, create one.
 	if f.dirinfo == nil {

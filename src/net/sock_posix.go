@@ -8,8 +8,10 @@ package net
 
 import (
 	"context"
+	"dara"
 	"internal/poll"
 	"os"
+	"runtime"
 	"syscall"
 )
 
@@ -39,8 +41,11 @@ type sockaddr interface {
 // socket returns a network file descriptor that is ready for
 // asynchronous I/O using the network poller.
 func socket(ctx context.Context, net string, family, sotype, proto int, ipv6only bool, laddr, raddr sockaddr) (fd *netFD, err error) {
-    // DARA Instrumentation
-    println("[SOCKET]")
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		println("[SOCKET]")
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SOCKET)
+	}
 	s, err := sysSocket(family, sotype, proto)
 	if err != nil {
 		return nil, err

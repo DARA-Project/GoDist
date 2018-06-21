@@ -5,7 +5,8 @@
 package os
 
 import (
-    "syscall"
+	"dara"
+	"runtime"
 )
 
 // Executable returns the path name for the executable that started
@@ -23,8 +24,9 @@ import (
 // Executable is not supported on nacl.
 func Executable() (string, error) {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[EXECUTABLE]")
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE)
 	}
 	return executable()
 }

@@ -775,10 +775,6 @@ func Socket(proto, sotype, unused int) (fd int, err error) {
 }
 
 func Bind(fd int, sa Sockaddr) error {
-    // DARA Instrumentation
-    print("[BIND] : ")
-    print(fd)
-    print(" ")
 	f, err := fdToNetFile(fd)
 	if err != nil {
 		return err
@@ -796,11 +792,6 @@ func StopIO(fd int) error {
 }
 
 func Listen(fd int, backlog int) error {
-    // DARA Instrumentation
-    print("[LISTEN] : ")
-    print(fd)
-    print(" ")
-    print(backlog)
 	f, err := fdToNetFile(fd)
 	if err != nil {
 		return err

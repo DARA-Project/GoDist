@@ -5,6 +5,7 @@
 package os
 
 import (
+	"dara"
 	"internal/testlog"
 	"runtime"
 	"sync"
@@ -70,9 +71,9 @@ type Signal interface {
 // Getpid returns the process id of the caller.
 func Getpid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETPID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPID)
 	}
 	return syscall.Getpid()
 }
@@ -80,9 +81,9 @@ func Getpid() int {
 // Getppid returns the process id of the caller's parent.
 func Getppid() int {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETPPID]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETPPID)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID)
 	}
 	return syscall.Getppid()
 }

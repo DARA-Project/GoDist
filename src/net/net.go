@@ -79,12 +79,13 @@ On Windows, the resolver always uses C library functions, such as GetAddrInfo an
 package net
 
 import (
-    "bufio"
 	"context"
+	"dara"
 	"errors"
 	"internal/poll"
 	"io"
 	"os"
+	"runtime"
 	"syscall"
 	"time"
 )
@@ -171,13 +172,14 @@ func (c *conn) ok() bool { return c != nil && c.fd != nil }
 
 // Read implements the Conn Read method.
 func (c *conn) Read(b []byte) (int, error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[NET.READ] : ")
-        print(c.fd.laddr.String())
-        print(" ")
-        println(c.fd.raddr.String())
-    }
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.READ] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		println(c.fd.raddr.String())
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_READ)
+	}
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
@@ -185,29 +187,22 @@ func (c *conn) Read(b []byte) (int, error) {
 	if err != nil && err != io.EOF {
 		err = &OpError{Op: "read", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
 	}
-    print("Read ")
-    println(n)
-    scanner := bufio.NewScanner(os.Stdin)
-    var input string
-    for input != " "{
-        scanner.Scan()
-        input = scanner.Text()
-    }
 	return n, err
 }
 
 // Write implements the Conn Write method.
 func (c *conn) Write(b []byte) (int, error) {
-    // DARA Instrumentation
-    if syscall.Is_dara_profiling_on() {
-        print("[NET.WRITE] : ")
-        print(c.fd.laddr.String())
-        print(" ")
-        print(c.fd.raddr.String())
-        print(" ")
-        println(string(b[:]))
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.WRITE] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(string(b[:]))
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_WRITE)
 	}
-    if !c.ok() {
+	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
 	n, err := c.fd.Write(b)
@@ -219,11 +214,14 @@ func (c *conn) Write(b []byte) (int, error) {
 
 // Close closes the connection.
 func (c *conn) Close() error {
-    // DARA Instrumentation
-    print("[NET.CLOSE] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    println(c.fd.raddr.String())
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.CLOSE] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		println(c.fd.raddr.String())
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_CLOSE)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}
@@ -256,13 +254,16 @@ func (c *conn) RemoteAddr() Addr {
 
 // SetDeadline implements the Conn SetDeadline method.
 func (c *conn) SetDeadline(t time.Time) error {
-    // DARA Instrumentation
-    print("[NET.SETDEADLINE] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(t.String())
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.SETDEADLINE] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(t.String())
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETDEADLINE)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}
@@ -274,13 +275,16 @@ func (c *conn) SetDeadline(t time.Time) error {
 
 // SetReadDeadline implements the Conn SetReadDeadline method.
 func (c *conn) SetReadDeadline(t time.Time) error {
-    // DARA Instrumentation
-    print("[NET.SETREADDEADLINE] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(t.String())
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.SETREADDEADLINE] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(t.String())
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADDEADLINE)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}
@@ -292,13 +296,16 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 
 // SetWriteDeadline implements the Conn SetWriteDeadline method.
 func (c *conn) SetWriteDeadline(t time.Time) error {
-    // DARA Instrumentation
-    print("[NET.SETWRITEDEADLINE] : ")
-    print(c.fd.laddr.String())
-    print(" ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(t.String())
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.SETWRITEDEADLINE] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(t.String())
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEDEADLINE)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}
@@ -311,11 +318,14 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 // SetReadBuffer sets the size of the operating system's
 // receive buffer associated with the connection.
 func (c *conn) SetReadBuffer(bytes int) error {
-    // DARA Instrumentation
-    print("[NET.SETREADBUFFER] : ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(bytes)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.SETREADBUFFER] : ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(bytes)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADBUFFER)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}
@@ -328,11 +338,14 @@ func (c *conn) SetReadBuffer(bytes int) error {
 // SetWriteBuffer sets the size of the operating system's
 // transmit buffer associated with the connection.
 func (c *conn) SetWriteBuffer(bytes int) error {
-    // DARA Instrumentation
-    print("[NET.SETWRITEBUFFER] : ")
-    print(c.fd.raddr.String())
-    print(" ")
-    println(bytes)
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.SETWRITEBUFFER] : ")
+		print(c.fd.raddr.String())
+		print(" ")
+		println(bytes)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEBUFFER)
+	}
 	if !c.ok() {
 		return syscall.EINVAL
 	}

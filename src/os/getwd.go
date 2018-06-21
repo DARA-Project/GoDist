@@ -5,6 +5,7 @@
 package os
 
 import (
+	"dara"
 	"runtime"
 	"sync"
 	"syscall"
@@ -25,9 +26,9 @@ var useSyscallwd = func(error) bool { return true }
 // Getwd may return any one of them.
 func Getwd() (dir string, err error) {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		println("[GETWD]")
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_GETCWD)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD)
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return syscall.Getwd()

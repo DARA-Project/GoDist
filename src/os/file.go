@@ -37,10 +37,12 @@
 package os
 
 import (
+	"dara"
 	"errors"
 	"internal/poll"
 	"internal/testlog"
 	"io"
+	"runtime"
 	"syscall"
 	"time"
 )
@@ -213,12 +215,12 @@ func (f *File) WriteString(s string) (n int, err error) {
 // If there is an error, it will be of type *PathError.
 func Mkdir(name string, perm FileMode) error {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		print("[MKDIR] : ")
 		print(name)
 		print(" ")
 		println(perm)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_MKDIR)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_MKDIR)
 	}
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
 
@@ -238,10 +240,10 @@ func Mkdir(name string, perm FileMode) error {
 // If there is an error, it will be of type *PathError.
 func Chdir(dir string) error {
 	// DARA Instrumentation
-	if syscall.Is_dara_profiling_on() {
+	if runtime.Is_dara_profiling_on() {
 		print("[CHDIR] : ")
 		println(dir)
-		syscall.Report_Syscall_To_Scheduler(syscall.SYS_CHDIR)
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHDIR)
 	}
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory
