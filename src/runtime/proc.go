@@ -2700,6 +2700,14 @@ var (
 	procchan *[CHANNELS]DaraProc
 )
 
+func SchedulerPrint(msg string){
+	print(msg)
+}
+
+func DaraLog(logmsg string){
+	print(logmsg)
+}
+
 func initDara() {
 	ProcCounter = 0
 	LastProc = -1
@@ -2816,6 +2824,7 @@ func getScheduledGp(gp *g) *g {
 						dprint(DEBUG, func() { println("Finally") })
 						//TODO exit without panicing
 						for { exit(0) }
+						throw("exiting...")
 					}
 					//TODO does this ever get hit
 					if Record {
