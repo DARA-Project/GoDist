@@ -58,7 +58,7 @@ func copyenv() {
 
 func Unsetenv(key string) error {
 	// DARA Instrumentation
-	if (Darainenv()) {
+	if (runtime.Is_dara_profiling_on()) {
 		println("[UNSETENV] : " + key)
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_UNSETENV)
 	}
@@ -75,27 +75,9 @@ func Unsetenv(key string) error {
 	return nil
 }
 
-func Darainenv() bool {
-	envOnce.Do(copyenv)
-
-	envLock.RLock()
-	defer envLock.RUnlock()
-	i, ok := env["DARA_PROFILING"]
-	if !ok {
-		return false
-	}
-	s := envs[i]
-	for i := 0; i < len(s); i++ {
-		if s[i] == '=' {
-			return true
-		}
-	}
-	return false
-}
-
 func Getenv(key string) (value string, found bool) {
 	// DARA Instrumentation
-	if (key != "DARA_PROFILING" && key != "DARAON" && key != "DARAPID" && Darainenv()) {
+	if (runtime.Is_dara_profiling_on()) {
 		println("[GETENV] : " + key)
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETENV)
 	}
@@ -122,7 +104,7 @@ func Getenv(key string) (value string, found bool) {
 
 func Setenv(key, value string) error {
 	// DARA Instrumentation
-	if (Darainenv()) {
+	if (runtime.Is_dara_profiling_on()) {
 		println("[SETENV] : " + key +  " "  + value)
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETENV)
 	}
@@ -159,7 +141,7 @@ func Setenv(key, value string) error {
 
 func Clearenv() {
 	// DARA Instrumentation
-	if (Darainenv()) {
+	if (runtime.Is_dara_profiling_on()) {
 		println("[CLEARENV]")
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CLEARENV)
 	}
@@ -177,7 +159,7 @@ func Clearenv() {
 
 func Environ() []string {
 	// DARA Instrumentation
-	if (Darainenv()) {
+	if (runtime.Is_dara_profiling_on()) {
 		println("[ENVIRON]")
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_ENVIRON)
 	}
