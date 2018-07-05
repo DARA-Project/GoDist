@@ -2712,7 +2712,7 @@ func initDara() {
 	//\DARA
 }
 
-func report_syscall(syscallID int) {
+func report_syscall(syscallID int, syscallInfo dara.GeneralSyscall) {
 	if DaraInitialised {
 		procchan[DPid].RunningRoutine.Syscall = syscallID
 	}

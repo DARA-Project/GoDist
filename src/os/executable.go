@@ -23,10 +23,14 @@ import (
 //
 // Executable is not supported on nacl.
 func Executable() (string, error) {
+	str, err := executable()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[EXECUTABLE]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE)
+		retInfo1 := dara.GeneralType{Type: dara.STRING, String: str}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_EXECUTABLE, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE, syscallInfo)
 	}
-	return executable()
+	return str, err
 }

@@ -214,16 +214,20 @@ func (f *File) WriteString(s string) (n int, err error) {
 // bits (before umask).
 // If there is an error, it will be of type *PathError.
 func Mkdir(name string, perm FileMode) error {
+	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
+
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		print("[MKDIR] : ")
 		print(name)
 		print(" ")
 		println(perm)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_MKDIR)
+		argInfo1 := dara.GeneralType{Type: dara.STRING, String : name}
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer : int(perm)}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_MKDIR, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_MKDIR, syscallInfo)
 	}
-	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
-
 	if e != nil {
 		return &PathError{"mkdir", name, e}
 	}
@@ -243,7 +247,10 @@ func Chdir(dir string) error {
 	if runtime.Is_dara_profiling_on() {
 		print("[CHDIR] : ")
 		println(dir)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHDIR)
+		argInfo := dara.GeneralType{Type: dara.STRING, String: dir}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_CHDIR, 1, 1, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CHDIR, syscallInfo)
 	}
 	if e := syscall.Chdir(dir); e != nil {
 		testlog.Open(dir) // observe likely non-existent directory

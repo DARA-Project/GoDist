@@ -30,6 +30,8 @@ const (
 	PROCS = 3
 	MAXGOROUTINES = 4096
 
+	UNSUPPORTEDVAL = 2440
+
 	//debug levels
 	DEBUG = iota
 	INFO

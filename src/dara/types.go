@@ -1,5 +1,44 @@
 package dara
 
+type TypeNum int
+
+const (
+	INTEGER TypeNum = iota
+	INTEGER64
+	BOOL
+	FLOAT
+	STRING
+	ARRAY
+	ERROR
+	POINTER
+	FILE
+	FILEINFO
+	CONNECTION
+	TIME
+	PROCESS
+	SIGNAL
+	CONTEXT
+	SOCKADDR
+)
+
+type GeneralType struct {
+	Type TypeNum
+	Integer int
+	Bool bool
+	Float float32
+	Integer64 int64
+	String string
+	Unsupported rune
+}
+
+type GeneralSyscall struct {
+	SyscallNum int
+	NumArgs int
+	NumRets int
+	Args [10]GeneralType
+	Rets [10]GeneralType
+}
+
 //DaraProc is used to communicate control and data information between
 //a single instrumented go runtime and the global scheduler. One of
 //these structures is mapped into shared memory for each process that
@@ -58,6 +97,8 @@ type RoutineInfo struct {
         FuncInfo [64]byte
 	// Syscall number at which the routine is blocked on
         Syscall int
+	// Syscall Information
+	SyscallInfo GeneralSyscall
 }
 
 type DaraProcStatus uint32

@@ -70,22 +70,28 @@ type Signal interface {
 
 // Getpid returns the process id of the caller.
 func Getpid() int {
+	i := syscall.Getpid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[GETPID]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPID)
+		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPID, syscallInfo)
 	}
-	return syscall.Getpid()
+	return i
 }
 
 // Getppid returns the process id of the caller's parent.
 func Getppid() int {
+	i := syscall.Getppid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[GETPPID]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID)
+		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID, syscallInfo)
 	}
-	return syscall.Getppid()
+	return i
 }
 
 // FindProcess looks for a running process by its pid.

@@ -15,11 +15,15 @@ import (
 // Stat returns the FileInfo structure describing file.
 // If there is an error, it will be of type *PathError.
 func (f *File) Stat() (FileInfo, error) {
-    // DARA Instrumentation
+	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		print("[FSTAT] : ")
 		println(f.file.name)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FSTAT)
+		argInfo := dara.GeneralType{Type: dara.STRING, String: f.name}
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_FSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FSTAT, syscallInfo)
 	}
 	if f == nil {
 		return nil, ErrInvalid
@@ -39,7 +43,11 @@ func statNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[STAT] : " + name)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_STAT)
+		argInfo := dara.GeneralType{Type: dara.STRING, String: name}
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_STAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_STAT, syscallInfo)
 	}
 	err := syscall.Stat(name, &fs.sys)
 	if err != nil {
@@ -55,7 +63,11 @@ func lstatNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[LSTAT] : " + name)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LSTAT)
+		argInfo := dara.GeneralType{Type: dara.STRING, String: name}
+		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_LSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_LSTAT, syscallInfo)
 	}
 	err := syscall.Lstat(name, &fs.sys)
 	if err != nil {

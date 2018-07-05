@@ -36,14 +36,18 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 
 	var status syscall.WaitStatus
 	var rusage syscall.Rusage
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-		print("[WAIT] : ")
-		println(p.Pid)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_WAIT4)
-	}
 	pid1, e := syscall.Wait4(p.Pid, &status, 0, &rusage)
 	if e != nil {
+		// DARA Instrumentation
+		if runtime.Is_dara_profiling_on() {
+			print("[WAIT] : ")
+			println(p.Pid)
+			argInfo := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
+			retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_WAIT4, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_WAIT4, syscallInfo)
+		}
 		return nil, NewSyscallError("wait", e)
 	}
 	if pid1 != 0 {
@@ -53,6 +57,16 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 		pid:    pid1,
 		status: status,
 		rusage: &rusage,
+	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[WAIT] : ")
+		println(p.Pid)
+		argInfo := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
+		retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_WAIT4, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_WAIT4, syscallInfo)
 	}
 	return ps, nil
 }
@@ -81,7 +95,11 @@ func (p *Process) signal(sig Signal) error {
 		print(p.Pid)
 		print(" ")
 		println(s.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_KILL)
+		argInfo1 := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
+		argInfo2 := dara.GeneralType{Type: dara.SIGNAL, String: s.String()}
+		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo :=  dara.GeneralSyscall{dara.DSYS_KILL, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_KILL, syscallInfo)
 	}
 	if e := syscall.Kill(p.Pid, s); e != nil {
 		if e == syscall.ESRCH {
