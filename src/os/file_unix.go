@@ -260,9 +260,6 @@ func (file *file) close() error {
 // read reads up to len(b) bytes from the File.
 // It returns the number of bytes read and an error, if any.
 func (f *File) read(b []byte) (n int, err error) {
-	if runtime.Is_dara_profiling_on() {
-		runtime.Gosched()
-	}
 	n, err = f.pfd.Read(b)
 	runtime.KeepAlive(f)
 	// DARA Instrumentation
