@@ -61,8 +61,14 @@ type DaraProc struct {
         //variable has not been initialized Originally Run was intended to
         //report the id of the goroutine that was executed, but that was
         //not always the same so the program counter  was needed, now
-        //RunningRoutine is used to report this
+        //RunningRoutine is used to report this. The global scheduler sets
+	// this to -4 to inform the local schedulers that replay is ended
         Run int
+	// Variable used by the local scheduler to inform the global scheduler
+	// that a syscall has been made by setting this to true.
+	// The global scheduler in turn restores it to false to instruct
+	// the local scheduler to move forward.
+	SyscallActive bool
         //RunningRoutine is the goroutine scheduled, running, or ran, for
         //any single replayed event in a schedule. In Record, the
         //executed goroutine is reported via this variable, in Replay the
