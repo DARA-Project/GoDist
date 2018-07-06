@@ -1,4 +1,3 @@
-
 // Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -2700,6 +2699,7 @@ func initDara() {
 		procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
 		procchan[DPid].Routines[allgs[i].goid].Gid = int(allgs[i].goid)
 		procchan[DPid].Routines[allgs[i].goid].Gpc = allgs[i].gopc
+		procchan[DPid].Routines[allgs[i].goid].Syscall = -1
 		var duplicateCounter = 1
 		for j := 0; j < len(procchan[DPid].Routines); j++ {
 			if procchan[DPid].Routines[i].Gpc > 0 && procchan[DPid].Routines[j].Gpc == allgs[i].gopc {
@@ -2716,6 +2716,18 @@ func report_syscall(syscallID int, syscallInfo dara.GeneralSyscall) {
 	if DaraInitialised {
 		procchan[DPid].RunningRoutine.Syscall = syscallID
 		procchan[DPid].RunningRoutine.SyscallInfo = syscallInfo
+		atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
+		moveForward := false
+		dprint(dara.DEBUG, func() {println("Reporting Syscall :#",syscallID)})
+		for !moveForward && atomic.Cas(&(procchan[DPid].Lock), dara.UNLOCKED, dara.LOCKED) {
+			if procchan[DPid].RunningRoutine.Syscall == -1 {
+				moveForward = true
+				dprint(dara.DEBUG, func() {println("Moving forward")})
+			} else {
+				atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
+			}
+		}
+		procchan[DPid].RunningRoutine.SyscallInfo = dara.GeneralSyscall{}
 	}
 }
 
