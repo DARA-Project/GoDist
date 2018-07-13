@@ -53,6 +53,9 @@ type DaraProc struct {
         //the state of the DaraProc
         Lock uint32
 
+	//SyscallLock is used to control the reporting of the syscalls.
+	SyscallLock uint32
+
 	//Run is a deprecated var with multiple purposes. Procs set their
         //Run to -1 when they Are done running (in replay mode) to let the
         //scheduler know they are done. The global scheduler sets this
@@ -64,6 +67,9 @@ type DaraProc struct {
         //RunningRoutine is used to report this. The global scheduler sets
 	// this to -4 to inform the local schedulers that replay is ended
         Run int
+	// Syscall number at which the running routine is blocked on. -1 means that
+	// there is no syscall on which the daraproc is blocked
+        Syscall int
         //RunningRoutine is the goroutine scheduled, running, or ran, for
         //any single replayed event in a schedule. In Record, the
         //executed goroutine is reported via this variable, in Replay the
@@ -96,8 +102,6 @@ type RoutineInfo struct {
         //A textual description of the function this goroutine was forked
         //from.In the future it can be removed.
         FuncInfo [64]byte
-	// Syscall number at which the routine is blocked on
-        Syscall int
 	// Syscall Information
 	SyscallInfo GeneralSyscall
 }

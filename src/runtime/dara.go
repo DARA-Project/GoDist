@@ -7,8 +7,6 @@ import (
 func Is_dara_profiling_on() bool {
 	if v := gogetenv("DARA_PROFILING"); v == "" {
 		return false
-	} else {
-		println(v)
 	}
 	return true
 }
