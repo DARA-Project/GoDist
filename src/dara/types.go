@@ -36,6 +36,9 @@ type DaraProc struct {
         //of scheduling runtimes update the states of all their routines
         //via this structure
         Routines [MAXGOROUTINES]RoutineInfo
+
+		LogIndex int
+		Log [MAXLOGENTRIES]EncLogEntry
 }
 
 //RoutineInfo contains data specific to a single goroutine
@@ -56,8 +59,35 @@ type RoutineInfo struct {
         //A textual description of the function this goroutine was forked
         //from.In the future it can be removed.
         FuncInfo [64]byte
-	// Syscall number at which the routine is blocked on
+		// Syscall number at which the routine is blocked on
         Syscall int
+}
+
+type EncLogEntry struct {
+	P int
+	G RoutineInfo
+	Length int
+	LogID [VARBUFLEN]byte
+	Vars [MAXLOGVARIABLES] EncNameValuePair
+}
+
+type EncNameValuePair struct {
+	VarName [VARBUFLEN]byte
+	Value [VARBUFLEN]byte
+	Type [VARBUFLEN]byte
+}
+
+type LogEntry struct {
+	P int
+	G RoutineInfo
+	LogID string
+	Vars []NameValuePair
+}
+
+type NameValuePair struct {
+	VarName string
+	Value interface{}
+	Type string
 }
 
 type DaraProcStatus uint32

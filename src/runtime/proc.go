@@ -2661,9 +2661,128 @@ func SchedulerPrint(msg string){
 	print(msg)
 }
 
-func DaraLog(logmsg string){
-	print(logmsg)
+//DaraLog("VaasState","a,b,c,BadVariableName",a,b,c,BadVariableName)
+func DaraLog(LogID, names string, values ...interface{}){
+	index := procchan[DPid].LogIndex
+	if index >= dara.MAXLOGENTRIES {
+		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+	}
+	if len(values) >= dara.MAXLOGVARIABLES {
+		panic("variables logged in "+LogID+" Exceeds MAXLOGVARIABLES, either modify dara/const or log fewer variables OwO")
+	}
+	le := &(procchan[DPid].Log[index])
+	(*le).P = DPid
+	(*le).G = procchan[DPid].RunningRoutine
+	(*le).Length = len(values)
+	(*le).LogID = str2byte64(LogID)
+	splitnames := splitstring(names)
+	for i := range values {
+		(*le).Vars[i].VarName = str2byte64(splitnames[i])
+		(*le).Vars[i].Value = encode(values[i])
+		(*le).Vars[i].Type = str2byte64(getType(values[i]))
+	}
+	procchan[DPid].LogIndex++
 }
+
+
+//TODO alloc all of the memory up fron or pass pointers to sharedmem
+//in directly to save time and space!
+func splitstring(names string) []string {
+	parsednames := make([]string,0)
+	front, back := 0, 0
+	for i:=0;i<len(names);i++ {
+		if names[front] == ',' {
+			parsednames = append(parsednames,names[back:front])
+			front++
+			back = front
+			continue
+		} //TODO start here, this is the parsing function of the logging function.
+		front++
+	}
+	parsednames = append(parsednames,names[back:front])
+	return parsednames
+}
+
+
+//TODO more granular typing
+func getType(v interface{}) string {
+	switch v.(type){
+	case bool:
+		return dara.BOOL
+	case int, int8, int16, int32, int64:
+		return dara.INT
+	case float32, float64:
+		return dara.FLOAT
+	case string:
+		return dara.STRING
+	default:
+		panic("unsuported-type")
+	}
+}
+
+func encode(v interface{}) [dara.VARBUFLEN]byte {
+	var copy [dara.VARBUFLEN]byte
+	var intcast int64
+	var floatcast float64
+	switch t := v.(type){
+	case bool:
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&t))
+	case int:
+		intcast = int64(t)
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&intcast))
+	case int8:
+		intcast = int64(t)
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&intcast))
+	case int16:
+		intcast = int64(t)
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&intcast))
+	case int32:
+		intcast = int64(t)
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&intcast))
+	case int64:
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&t))
+	case float32:
+		floatcast = float64(t)
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&floatcast))
+	case float64:
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&t))
+	case string:
+		if len(t) > dara.VARBUFLEN {
+			panic("CANT ENCODE STRING IT's TOO LONG!!!")
+		}
+		copy = *(*[dara.VARBUFLEN]byte)(unsafe.Pointer(&t))
+	default:
+		panic("ERR CANNOT ENCODE!")
+	}
+	return copy
+}
+
+func DecodeValue(name, buffer [dara.VARBUFLEN]byte) interface{} {
+	a := string(name[:])
+	if a[0:len(dara.BOOL)] == dara.BOOL {
+		return *(*bool)(unsafe.Pointer(&buffer))
+	} else if a[:len(dara.INT)] == dara.INT {
+		return *(*int)(unsafe.Pointer(&buffer))
+	} else if a[:len(dara.FLOAT)] == dara.FLOAT {
+		return *(*float32)(unsafe.Pointer(&buffer))
+	} else if a[:len(dara.STRING)] == dara.STRING {
+		return *(*string)(unsafe.Pointer(&buffer))
+	}
+	panic("unsupported decode type: "+string(a)+"\n")
+	return nil
+}
+
+func str2byte64(s string)(ret [dara.VARBUFLEN]byte) {
+	if len(s) > dara.VARBUFLEN {
+		panic("String to long to convert to [dara.VARBUFLEN]byte")
+	}
+	for i:=0;i<len(s);i++{
+		ret[i] = s[i]
+	}
+	return
+}
+
+
 
 func initDara() {
 	ProcCounter = 0
@@ -2763,6 +2882,7 @@ func getScheduledGp(gp *g) *g {
 		//wait for the global scheduler
 		for {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
+			//dprint(dara.DEBUG, func() {println("Unlocked")})
 				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
 					//print("active")
 					//TODO I should stop doing this 

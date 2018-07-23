@@ -24,11 +24,15 @@ const (
 	//The total size of the shared memory region is
         //dara.PAGESIZE*dara.SHAREDMEMPAGES
 	PAGESIZE = 4096
-	SHAREDMEMPAGES = 65536
+	SHAREDMEMPAGES = 65536*4
 
 	SCHEDLEN = 1000000000
 	PROCS = 3
 	MAXGOROUTINES = 4096
+
+	MAXLOGENTRIES = 4096
+	MAXLOGVARIABLES = 128
+	VARBUFLEN = 64
 
 	//debug levels
 	DEBUG = iota
@@ -36,6 +40,14 @@ const (
 	WARN
 	FATAL
 	OFF
+)
+
+//loggging consts
+const (
+	BOOL = "bool"
+	INT = "int"
+	FLOAT = "float"
+	STRING = "string"
 )
 
 //Goroutine states from runtime/proc.go
