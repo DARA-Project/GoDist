@@ -13,13 +13,16 @@ import (
 
 // Getpagesize returns the underlying system's memory page size.
 func Getpagesize() int {
-    // DARA Instrumentation
-    // This doesn't actually trap into the OS. Provided by the runtime.
+	size := syscall.Getpagesize()
+	// DARA Instrumentation
+	// This doesn't actually trap into the OS. Provided by the runtime.
 	if runtime.Is_dara_profiling_on() {
 		println("[GETPAGESIZE]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPAGESIZE)
+		retInfo := dara.GeneralType{Type: dara.INTEGER, Integer: size}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPAGESIZE, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPAGESIZE, syscallInfo)
 	}
-	return syscall.Getpagesize()
+	return size
 }
 
 // File represents an open file descriptor.

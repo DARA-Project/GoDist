@@ -172,26 +172,69 @@ func (c *conn) ok() bool { return c != nil && c.fd != nil }
 
 // Read implements the Conn Read method.
 func (c *conn) Read(b []byte) (int, error) {
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-		print("[NET.READ] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		println(c.fd.raddr.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_READ)
-	}
 	if !c.ok() {
+		// DARA Instrumentation
+		if runtime.Is_dara_profiling_on() {
+			print("[NET.READ] : ")
+			print(c.fd.laddr.String())
+			print(" ")
+			println(c.fd.raddr.String())
+			str := c.fd.laddr.String() + c.fd.raddr.String()
+			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+			argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+			retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
+			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_READ, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_READ, syscallInfo)
+		}
 		return 0, syscall.EINVAL
 	}
 	n, err := c.fd.Read(b)
 	if err != nil && err != io.EOF {
 		err = &OpError{Op: "read", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
 	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[NET.READ] : ")
+		print(c.fd.laddr.String())
+		print(" ")
+		println(c.fd.raddr.String())
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_READ, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_READ, syscallInfo)
+	}
 	return n, err
 }
 
 // Write implements the Conn Write method.
 func (c *conn) Write(b []byte) (int, error) {
+	if !c.ok() {
+		// DARA Instrumentation
+		if runtime.Is_dara_profiling_on() {
+			print("[NET.WRITE] : ")
+			print(c.fd.laddr.String())
+			print(" ")
+			print(c.fd.raddr.String())
+			print(" ")
+			println(string(b[:]))
+			str := c.fd.laddr.String() + c.fd.raddr.String()
+			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+			argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(str)}
+			retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
+			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_WRITE, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_WRITE, syscallInfo)
+		}
+		return 0, syscall.EINVAL
+	}
+	n, err := c.fd.Write(b)
+	if err != nil {
+		err = &OpError{Op: "write", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
+	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		print("[NET.WRITE] : ")
@@ -200,14 +243,13 @@ func (c *conn) Write(b []byte) (int, error) {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(string(b[:]))
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_WRITE)
-	}
-	if !c.ok() {
-		return 0, syscall.EINVAL
-	}
-	n, err := c.fd.Write(b)
-	if err != nil {
-		err = &OpError{Op: "write", Net: c.fd.net, Source: c.fd.laddr, Addr: c.fd.raddr, Err: err}
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(str)}
+		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_WRITE, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_WRITE, syscallInfo)
 	}
 	return n, err
 }
@@ -220,7 +262,11 @@ func (c *conn) Close() error {
 		print(c.fd.laddr.String())
 		print(" ")
 		println(c.fd.raddr.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_CLOSE)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_CLOSE, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_CLOSE, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -262,7 +308,12 @@ func (c *conn) SetDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETDEADLINE)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETDEADLINE, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -283,7 +334,12 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADDEADLINE)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETREADDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADDEADLINE, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -304,7 +360,12 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(t.String())
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEDEADLINE)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETWRITEDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEDEADLINE, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -324,7 +385,12 @@ func (c *conn) SetReadBuffer(bytes int) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(bytes)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADBUFFER)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: bytes}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETREADBUFFER, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADBUFFER, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL
@@ -344,7 +410,12 @@ func (c *conn) SetWriteBuffer(bytes int) error {
 		print(c.fd.raddr.String())
 		print(" ")
 		println(bytes)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEBUFFER)
+		str := c.fd.laddr.String() + c.fd.raddr.String()
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: bytes}
+		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETWRITEBUFFER, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEBUFFER, syscallInfo)
 	}
 	if !c.ok() {
 		return syscall.EINVAL

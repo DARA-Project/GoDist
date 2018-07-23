@@ -44,7 +44,18 @@ func socket(ctx context.Context, net string, family, sotype, proto int, ipv6only
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[SOCKET]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SOCKET)
+		argInfo1 := dara.GeneralType{Type: dara.CONTEXT, Unsupported: dara.UNSUPPORTEDVAL}
+		argInfo2 := dara.GeneralType{Type: dara.STRING, String: net}
+		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: family}
+		argInfo4 := dara.GeneralType{Type: dara.INTEGER, Integer: sotype}
+		argInfo5 := dara.GeneralType{Type: dara.INTEGER, Integer: proto}
+		argInfo6 := dara.GeneralType{Type: dara.BOOL, Bool: ipv6only}
+		argInfo7 := dara.GeneralType{Type: dara.SOCKADDR, Unsupported: dara.UNSUPPORTEDVAL}
+		argInfo8 := dara.GeneralType{Type: dara.SOCKADDR, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_SOCKET, 8, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3, argInfo4, argInfo5, argInfo6, argInfo7, argInfo8}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SOCKET, syscallInfo)
 	}
 	s, err := sysSocket(family, sotype, proto)
 	if err != nil {

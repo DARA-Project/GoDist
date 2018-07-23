@@ -18,14 +18,6 @@ const (
 )
 
 func (f *File) readdir(n int) (fi []FileInfo, err error) {
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-		print("[Readdir] : ")
-		print(f.file.name)
-		print(" ")
-		println(n)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR)
-	}
 	dirname := f.name
 	if dirname == "" {
 		dirname = "."
@@ -40,6 +32,18 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 			continue
 		}
 		if lerr != nil {
+			if runtime.Is_dara_profiling_on() {
+				print("[Readdir] : ")
+				print(f.file.name)
+				print(" ")
+				println(n)
+				argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
+				argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
+				retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
+				retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+				syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIR, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+				runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR, syscallInfo)
+			}
 			return fi, lerr
 		}
 		fi = append(fi, fip)
@@ -49,18 +53,23 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		// must be non-nil if n > 0.
 		err = io.EOF
 	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[Readdir] : ")
+		print(f.file.name)
+		print(" ")
+		println(n)
+		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
+		argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
+		retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
+		retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIR, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR, syscallInfo)
+	}
 	return fi, err
 }
 
 func (f *File) readdirnames(n int) (names []string, err error) {
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-		print("[Readdirnames] : ")
-		print(f.file.name)
-		print(" ")
-		println(n)
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIRNAMES)
-	}
 	// If this file has no dirinfo, create one.
 	if f.dirinfo == nil {
 		f.dirinfo = new(dirInfo)
@@ -84,6 +93,18 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 			d.nbuf, errno = f.pfd.ReadDirent(d.buf)
 			runtime.KeepAlive(f)
 			if errno != nil {
+				if runtime.Is_dara_profiling_on() {
+					print("[Readdirnames] : ")
+					print(f.file.name)
+					print(" ")
+					println(n)
+					argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+					argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
+					retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
+					retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+					syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIRNAMES, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+					runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIRNAMES, syscallInfo)
+				}
 				return names, wrapSyscallError("readdirent", errno)
 			}
 			if d.nbuf <= 0 {
@@ -98,7 +119,32 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 		n -= nc
 	}
 	if n >= 0 && len(names) == 0 {
+		if runtime.Is_dara_profiling_on() {
+			print("[Readdirnames] : ")
+			print(f.file.name)
+			print(" ")
+			println(n)
+			argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+			argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
+			retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
+			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIRNAMES, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIRNAMES, syscallInfo)
+		}
 		return names, io.EOF
+	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		print("[Readdirnames] : ")
+		print(f.file.name)
+		print(" ")
+		println(n)
+		argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
+		retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
+		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIRNAMES, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIRNAMES, syscallInfo)
 	}
 	return names, nil
 }

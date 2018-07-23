@@ -1043,17 +1043,28 @@ func now() (sec int64, nsec int32, mono int64)
 
 // Now returns the current local time.
 func Now() Time {
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-		println("[TIME.NOW]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_TIMENOW)
-	}
 	sec, nsec, mono := now()
 	sec += unixToInternal - minWall
 	if uint64(sec)>>33 != 0 {
-		return Time{uint64(nsec), sec + minWall, Local}
+		t := Time{uint64(nsec), sec + minWall, Local}
+		// DARA Instrumentation
+		if runtime.Is_dara_profiling_on() {
+			println("[TIME.NOW]")
+			retInfo := dara.GeneralType{Type : dara.TIME, String:t.String()}
+			syscallInfo := dara.GeneralSyscall{dara.DSYS_TIMENOW, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+			runtime.Report_Syscall_To_Scheduler(dara.DSYS_TIMENOW, syscallInfo)
+		}
+		return t
 	}
-	return Time{hasMonotonic | uint64(sec)<<nsecShift | uint64(nsec), mono, Local}
+	t := Time{hasMonotonic | uint64(sec)<<nsecShift | uint64(nsec), mono, Local}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+		println("[TIME.NOW]")
+		retInfo := dara.GeneralType{Type : dara.TIME, String:t.String()}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_TIMENOW, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_TIMENOW, syscallInfo)
+	}
+	return t
 }
 
 func unixTime(sec int64, nsec int32) Time {

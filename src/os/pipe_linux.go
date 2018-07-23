@@ -15,7 +15,11 @@ func Pipe() (r *File, w *File, err error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[PIPE]")
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PIPE2)
+		retInfo1 := dara.GeneralType{Type: dara.FILE, String: r.name}
+		retInfo2 := dara.GeneralType{Type: dara.FILE, String: w.name}
+		retInfo3 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_PIPE2, 0, 3, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2, retInfo3}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PIPE2, syscallInfo)
 	}
 	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	// pipe2 was added in 2.6.27 and our minimum requirement is 2.6.23, so it

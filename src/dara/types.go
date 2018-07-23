@@ -1,5 +1,44 @@
 package dara
 
+type TypeNum int
+
+const (
+	INTEGER TypeNum = iota
+	INTEGER64
+	BOOL
+	FLOAT
+	STRING
+	ARRAY
+	ERROR
+	POINTER
+	FILE
+	FILEINFO
+	CONNECTION
+	TIME
+	PROCESS
+	SIGNAL
+	CONTEXT
+	SOCKADDR
+)
+
+type GeneralType struct {
+	Type TypeNum
+	Integer int
+	Bool bool
+	Float float32
+	Integer64 int64
+	String string
+	Unsupported rune
+}
+
+type GeneralSyscall struct {
+	SyscallNum int
+	NumArgs int
+	NumRets int
+	Args [10]GeneralType
+	Rets [10]GeneralType
+}
+
 //DaraProc is used to communicate control and data information between
 //a single instrumented go runtime and the global scheduler. One of
 //these structures is mapped into shared memory for each process that
@@ -14,6 +53,9 @@ type DaraProc struct {
         //the state of the DaraProc
         Lock uint32
 
+	//SyscallLock is used to control the reporting of the syscalls.
+	SyscallLock uint32
+
 	//Run is a deprecated var with multiple purposes. Procs set their
         //Run to -1 when they Are done running (in replay mode) to let the
         //scheduler know they are done. The global scheduler sets this
@@ -22,8 +64,12 @@ type DaraProc struct {
         //variable has not been initialized Originally Run was intended to
         //report the id of the goroutine that was executed, but that was
         //not always the same so the program counter  was needed, now
-        //RunningRoutine is used to report this
+        //RunningRoutine is used to report this. The global scheduler sets
+	// this to -4 to inform the local schedulers that replay is ended
         Run int
+	// Syscall number at which the running routine is blocked on. -1 means that
+	// there is no syscall on which the daraproc is blocked
+        Syscall int
         //RunningRoutine is the goroutine scheduled, running, or ran, for
         //any single replayed event in a schedule. In Record, the
         //executed goroutine is reported via this variable, in Replay the
@@ -59,8 +105,8 @@ type RoutineInfo struct {
         //A textual description of the function this goroutine was forked
         //from.In the future it can be removed.
         FuncInfo [64]byte
-		// Syscall number at which the routine is blocked on
-        Syscall int
+		// Syscall Information
+		SyscallInfo GeneralSyscall
 }
 
 type EncLogEntry struct {
