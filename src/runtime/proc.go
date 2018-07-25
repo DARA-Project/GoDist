@@ -2710,20 +2710,22 @@ func LogSchedulingEvent(routine dara.RoutineInfo) {
 }
 
 func LogSyscall(syscallInfo dara.GeneralSyscall) {
-	index := procchan[DPid].LogIndex
-	if index >= dara.MAXLOGENTRIES {
-		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
-	}
-	e := &(procchan[DPid].Log[index])
-	(*e).Type = dara.SYSCALL_EVENT
-	(*e).P = DPid
-	(*e).G = procchan[DPid].RunningRoutine //Redundent reporting for ease
-	(*e).Epoch = procchan[DPid].Epoch
+	if DaraInitialised {
+		index := procchan[DPid].LogIndex
+		if index >= dara.MAXLOGENTRIES {
+			panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+		}
+		e := &(procchan[DPid].Log[index])
+		(*e).Type = dara.SYSCALL_EVENT
+		(*e).P = DPid
+		(*e).G = procchan[DPid].RunningRoutine //Redundent reporting for ease
+		(*e).Epoch = procchan[DPid].Epoch
 
-	(*e).ELE = dara.EncLogEntry{}	
-	(*e).SyscallInfo = syscallInfo
-	(*e).EM = dara.EncodedMessage{}
-	procchan[DPid].LogIndex++
+		(*e).ELE = dara.EncLogEntry{}	
+		(*e).SyscallInfo = syscallInfo
+		(*e).EM = dara.EncodedMessage{}
+		procchan[DPid].LogIndex++
+	}
 }
 
 func LogMessage(msgtype int, m dara.Message) {
