@@ -7,17 +7,17 @@ const (
 	PROT_READ = 0x1
 	PROT_WRITE = 0x2
 
-        //The number of preallocated communication channels in shared
-        //memory. This value can change in the future, for now 5 is the
-        //maximum number of Processes. Invariant: dara.CHANNELS >= procs. TODO
-        //assert this
+	//The number of preallocated communication channels in shared
+	//memory. This value can change in the future, for now 5 is the
+	//maximum number of Processes. Invariant: dara.CHANNELS >= procs. TODO
+	//assert this
 	CHANNELS = 5
 
 	//File discriptor for shared memory. This is set in the runscript.
 	DARAFD = 666
 
-        //State of spin locks. These are used by cas operations to control
-        //the execution of the insturmented runtimes
+	//State of spin locks. These are used by cas operations to control
+	//the execution of the insturmented runtimes
 	UNLOCKED = 0
 	LOCKED = 1
 
@@ -45,10 +45,10 @@ const (
 
 //loggging consts
 const (
-	BOOL = "bool"
-	INT = "int"
-	FLOAT = "float"
-	STRING = "string"
+	BOOL_STRING = "bool"
+	INT_STRING = "int"
+	FLOAT_STRING = "float"
+	STRING_STRING = "string"
 )
 
 //Goroutine states from runtime/proc.go

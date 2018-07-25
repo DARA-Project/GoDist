@@ -2669,20 +2669,88 @@ func DaraLog(LogID, names string, values ...interface{}){
 	if len(values) >= dara.MAXLOGVARIABLES {
 		panic("variables logged in "+LogID+" Exceeds MAXLOGVARIABLES, either modify dara/const or log fewer variables OwO")
 	}
-	le := &(procchan[DPid].Log[index])
-	(*le).P = DPid
-	(*le).G = procchan[DPid].RunningRoutine
-	(*le).Length = len(values)
-	(*le).LogID = str2byte64(LogID)
+	e := &(procchan[DPid].Log[index])
+	(*e).Type = dara.LOG_EVENT
+	(*e).P = DPid
+	(*e).G = procchan[DPid].RunningRoutine
+	(*e).Epoch = procchan[DPid].Epoch
+
+	(*e).ELE.Length = len(values)
+	(*e).ELE.LogID = str2byte64(LogID)
 	splitnames := splitstring(names)
 	for i := range values {
-		(*le).Vars[i].VarName = str2byte64(splitnames[i])
-		(*le).Vars[i].Value = encode(values[i])
-		(*le).Vars[i].Type = str2byte64(getType(values[i]))
+		(*e).ELE.Vars[i].VarName = str2byte64(splitnames[i])
+		(*e).ELE.Vars[i].Value = encode(values[i])
+		(*e).ELE.Vars[i].Type = str2byte64(getType(values[i]))
 	}
+	//This type of event is log, not syscall or sched. Zero the rest
+	//of memory in the log to prevent bugs
+	(*e).SyscallInfo = dara.GeneralSyscall{}
+	(*e).EM = dara.EncodedMessage{}
+	//logging finished update index
 	procchan[DPid].LogIndex++
 }
 
+func LogSchedulingEvent(routine dara.RoutineInfo) {
+	index := procchan[DPid].LogIndex
+	if index >= dara.MAXLOGENTRIES {
+		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+	}
+	e := &(procchan[DPid].Log[index])
+	(*e).Type = dara.SCHED_EVENT
+	(*e).P = DPid
+	(*e).G = procchan[DPid].RunningRoutine //This is the key bit
+	(*e).Epoch = procchan[DPid].Epoch
+
+	//Zero the rest of memory
+	(*e).ELE = dara.EncLogEntry{}	
+	(*e).SyscallInfo = dara.GeneralSyscall{}
+	(*e).EM = dara.EncodedMessage{}
+	procchan[DPid].LogIndex++
+}
+
+func LogSyscall(syscallInfo dara.GeneralSyscall) {
+	index := procchan[DPid].LogIndex
+	if index >= dara.MAXLOGENTRIES {
+		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+	}
+	e := &(procchan[DPid].Log[index])
+	(*e).Type = dara.SYSCALL_EVENT
+	(*e).P = DPid
+	(*e).G = procchan[DPid].RunningRoutine //Redundent reporting for ease
+	(*e).Epoch = procchan[DPid].Epoch
+
+	(*e).ELE = dara.EncLogEntry{}	
+	(*e).SyscallInfo = syscallInfo
+	(*e).EM = dara.EncodedMessage{}
+	procchan[DPid].LogIndex++
+}
+
+func LogMessage(msgtype int, m dara.Message) {
+	//TODO
+}
+
+
+func report_syscall(syscallID int, syscallInfo dara.GeneralSyscall) {
+	if DaraInitialised {
+		procchan[DPid].Syscall = syscallID
+		//procchan[DPid].RunningRoutine.SyscallInfo = syscallInfo
+		atomic.Store(&(procchan[DPid].SyscallLock), dara.UNLOCKED)
+		moveForward := false
+		dprint(dara.DEBUG, func() {println("Reporting Syscall :#",syscallID)})
+		for ;!moveForward; {
+			if atomic.Cas(&(procchan[DPid].SyscallLock), dara.UNLOCKED, dara.LOCKED) {
+				if procchan[DPid].Syscall == -1 {
+					moveForward = true
+				} else {
+					atomic.Store(&(procchan[DPid].SyscallLock), dara.UNLOCKED)
+				}
+			}
+		}
+		//procchan[DPid].RunningRoutine.SyscallInfo = dara.GeneralSyscall{}
+		procchan[DPid].Syscall = -1
+	}
+}
 
 //TODO alloc all of the memory up fron or pass pointers to sharedmem
 //in directly to save time and space!
@@ -2707,13 +2775,13 @@ func splitstring(names string) []string {
 func getType(v interface{}) string {
 	switch v.(type){
 	case bool:
-		return dara.BOOL
+		return dara.BOOL_STRING
 	case int, int8, int16, int32, int64:
-		return dara.INT
+		return dara.INT_STRING
 	case float32, float64:
-		return dara.FLOAT
+		return dara.FLOAT_STRING
 	case string:
-		return dara.STRING
+		return dara.STRING_STRING
 	default:
 		panic("unsuported-type")
 	}
@@ -2758,13 +2826,13 @@ func encode(v interface{}) [dara.VARBUFLEN]byte {
 
 func DecodeValue(name, buffer [dara.VARBUFLEN]byte) interface{} {
 	a := string(name[:])
-	if a[0:len(dara.BOOL)] == dara.BOOL {
+	if a[0:len(dara.BOOL_STRING)] == dara.BOOL_STRING {
 		return *(*bool)(unsafe.Pointer(&buffer))
-	} else if a[:len(dara.INT)] == dara.INT {
+	} else if a[:len(dara.INT_STRING)] == dara.INT_STRING {
 		return *(*int)(unsafe.Pointer(&buffer))
-	} else if a[:len(dara.FLOAT)] == dara.FLOAT {
+	} else if a[:len(dara.FLOAT_STRING)] == dara.FLOAT_STRING {
 		return *(*float32)(unsafe.Pointer(&buffer))
-	} else if a[:len(dara.STRING)] == dara.STRING {
+	} else if a[:len(dara.STRING_STRING)] == dara.STRING_STRING {
 		return *(*string)(unsafe.Pointer(&buffer))
 	}
 	panic("unsupported decode type: "+string(a)+"\n")
@@ -2826,31 +2894,12 @@ func initDara() {
 		}
 		procchan[DPid].Routines[allgs[i].goid].RoutineCount = duplicateCounter
 	}
+
 	atomic.Store(&(procchan[DPid].SyscallLock), dara.LOCKED)
 	DaraInitialised = true
 	//\DARA
 }
 
-func report_syscall(syscallID int, syscallInfo dara.GeneralSyscall) {
-	if DaraInitialised {
-		procchan[DPid].Syscall = syscallID
-		procchan[DPid].RunningRoutine.SyscallInfo = syscallInfo
-		atomic.Store(&(procchan[DPid].SyscallLock), dara.UNLOCKED)
-		moveForward := false
-		dprint(dara.DEBUG, func() {println("Reporting Syscall :#",syscallID)})
-		for ;!moveForward; {
-			if atomic.Cas(&(procchan[DPid].SyscallLock), dara.UNLOCKED, dara.LOCKED) {
-				if procchan[DPid].Syscall == -1 {
-					moveForward = true
-				} else {
-					atomic.Store(&(procchan[DPid].SyscallLock), dara.UNLOCKED)
-				}
-			}
-		}
-		procchan[DPid].RunningRoutine.SyscallInfo = dara.GeneralSyscall{}
-		procchan[DPid].Syscall = -1
-	}
-}
 
 //go:yeswritebarrierrec
 func getScheduledGp(gp *g) *g {
@@ -2869,12 +2918,18 @@ func getScheduledGp(gp *g) *g {
 			//report updates to state and unlock variable TODO this
 			//must be more expressive
 			if procchan[DPid].Run == -3 {
-				//This is the record state
+				//NOTE THIS IS BUG BUG BUG probable look here first if
+				//the refactoring breaks July24-2018
 				procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+				//This is the record state
 				procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
 				procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
 				procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
 				procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
+				LogSchedulingEvent(procchan[DPid].RunningRoutine)
+				//Treat scheduling event as a special event rather
+				//than as a first class citizen
+
 			} else if procchan[DPid].Run == -4 {
 				end_of_Replay = true
 			} else {

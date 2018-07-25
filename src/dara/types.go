@@ -21,23 +21,16 @@ const (
 	SOCKADDR
 )
 
-type GeneralType struct {
-	Type TypeNum
-	Integer int
-	Bool bool
-	Float float32
-	Integer64 int64
-	String string
-	Unsupported rune
-}
+//Event Types
+const (
+	LOG_EVENT = iota
+	SYSCALL_EVENT
+	SEND_EVENT
+	REC_EVENT
+	SCHED_EVENT
+)
 
-type GeneralSyscall struct {
-	SyscallNum int
-	NumArgs int
-	NumRets int
-	Args [10]GeneralType
-	Rets [10]GeneralType
-}
+
 
 //DaraProc is used to communicate control and data information between
 //a single instrumented go runtime and the global scheduler. One of
@@ -47,44 +40,45 @@ type GeneralSyscall struct {
 //global scheduler, or Segfault immediately 
 type DaraProc struct {
 
-        //Lock is used to control the execution of a process. A process
-        //which is running but Not scheduled will spin on this lock using
-        //checkandset operations If the lock is held The owner can modify
-        //the state of the DaraProc
-        Lock uint32
+	//Lock is used to control the execution of a process. A process
+	//which is running but Not scheduled will spin on this lock using
+	//checkandset operations If the lock is held The owner can modify
+	//the state of the DaraProc
+	Lock uint32
 
 	//SyscallLock is used to control the reporting of the syscalls.
 	SyscallLock uint32
 
 	//Run is a deprecated var with multiple purposes. Procs set their
-        //Run to -1 when they Are done running (in replay mode) to let the
-        //scheduler know they are done. The global scheduler sets this
-        //value to 2 to let the runtime know its replay, and 3 for record
-        //1 is used to denote the first event, and 0 indicates this
-        //variable has not been initialized Originally Run was intended to
-        //report the id of the goroutine that was executed, but that was
-        //not always the same so the program counter  was needed, now
-        //RunningRoutine is used to report this. The global scheduler sets
+	//Run to -1 when they Are done running (in replay mode) to let the
+	//scheduler know they are done. The global scheduler sets this
+	//value to 2 to let the runtime know its replay, and 3 for record
+	//1 is used to denote the first event, and 0 indicates this
+	//variable has not been initialized Originally Run was intended to
+	//report the id of the goroutine that was executed, but that was
+	//not always the same so the program counter  was needed, now
+	//RunningRoutine is used to report this. The global scheduler sets
 	// this to -4 to inform the local schedulers that replay is ended
-        Run int
+	Run int
 	// Syscall number at which the running routine is blocked on. -1 means that
 	// there is no syscall on which the daraproc is blocked
-        Syscall int
-        //RunningRoutine is the goroutine scheduled, running, or ran, for
-        //any single replayed event in a schedule. In Record, the
-        //executed goroutine is reported via this variable, in Replay the
-        //global scheduler tells the runtime which routine to run with
-        //RunningRoutine
-        RunningRoutine RoutineInfo
-        //Routines is the full set of goroutines a process is allowed to
-        //run. The total number is allocated upfront so that shared memory
-        //does not need to be resized dynamically. After each iteration
-        //of scheduling runtimes update the states of all their routines
-        //via this structure
-        Routines [MAXGOROUTINES]RoutineInfo
-
-		LogIndex int
-		Log [MAXLOGENTRIES]EncLogEntry
+	Syscall int
+	//RunningRoutine is the goroutine scheduled, running, or ran, for
+	//any single replayed event in a schedule. In Record, the
+	//executed goroutine is reported via this variable, in Replay the
+	//global scheduler tells the runtime which routine to run with
+	//RunningRoutine
+	RunningRoutine RoutineInfo
+	//Routines is the full set of goroutines a process is allowed to
+	//run. The total number is allocated upfront so that shared memory
+	//does not need to be resized dynamically. After each iteration
+	//of scheduling runtimes update the states of all their routines
+	//via this structure
+	Routines [MAXGOROUTINES]RoutineInfo
+	//TODO document
+	Epoch int
+	LogIndex int
+	Log [MAXLOGENTRIES]EncEvent
 }
 
 //RoutineInfo contains data specific to a single goroutine
@@ -105,16 +99,45 @@ type RoutineInfo struct {
         //A textual description of the function this goroutine was forked
         //from.In the future it can be removed.
         FuncInfo [64]byte
-		// Syscall Information
-		SyscallInfo GeneralSyscall
+}
+
+type EncEvent struct {
+	Type int
+	P int
+	G RoutineInfo
+	Epoch int
+	ELE EncLogEntry
+	SyscallInfo GeneralSyscall
+	EM EncodedMessage
 }
 
 type EncLogEntry struct {
-	P int
-	G RoutineInfo
 	Length int
 	LogID [VARBUFLEN]byte
 	Vars [MAXLOGVARIABLES] EncNameValuePair
+}
+
+type GeneralType struct {
+	Type TypeNum
+	Integer int
+	Bool bool
+	Float float32
+	Integer64 int64
+	String string
+	Unsupported rune
+}
+
+type GeneralSyscall struct {
+	SyscallNum int
+	NumArgs int
+	NumRets int
+	Args [10]GeneralType
+	Rets [10]GeneralType
+}
+
+//TODO fill out this structure
+type EncodedMessage struct {
+	Body [VARBUFLEN]byte
 }
 
 type EncNameValuePair struct {
@@ -123,9 +146,17 @@ type EncNameValuePair struct {
 	Type [VARBUFLEN]byte
 }
 
-type LogEntry struct {
+type Event struct {
+	Type int
 	P int
 	G RoutineInfo
+	Epoch int
+	LE LogEntry
+	SyscallInfo GeneralSyscall
+	Msg Message
+}
+
+type LogEntry struct {
 	LogID string
 	Vars []NameValuePair
 }
@@ -135,6 +166,11 @@ type NameValuePair struct {
 	Value interface{}
 	Type string
 }
+
+type Message struct {
+	Body string
+}
+
 
 type DaraProcStatus uint32
 
@@ -158,17 +194,6 @@ const (
 
 func GetDaraProcStatus(status uint32) DaraProcStatus {
 	return DaraProcStatus(status)
-}
-
-/**
-  * Struct representing an event in the lifetime of a process
-  */
-type Event struct {
-        //ProcID is an ID for a single runtime
-        ProcID int
-        //Routine contians information about the routine to run, including
-        //state, blocking, and id information
-        Routine RoutineInfo
 }
 
 //Type which encapsulates a single schedule

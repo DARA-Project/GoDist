@@ -20,5 +20,6 @@ func Is_Dara_On() bool {
 }
 
 func Report_Syscall_To_Scheduler(syscallID int, syscallInfo dara.GeneralSyscall) {
-	report_syscall(syscallID, syscallInfo)
+	//report_syscall(syscallID, syscallInfo) //TODO remove this it's redundent and slow
+	LogSyscall(syscallInfo)
 }
