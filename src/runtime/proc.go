@@ -2885,6 +2885,10 @@ func initDara() {
 
 	for i := 0; i < len(allgs); i++ {
 		//set everything including status
+		if allgs[i].goid >= dara.MAXGOROUTINES {
+			panic("GoRoutine number out of range")
+		}
+		println(allgs[i].goid, DPid)
 		procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
 		procchan[DPid].Routines[allgs[i].goid].Gid = int(allgs[i].goid)
 		procchan[DPid].Routines[allgs[i].goid].Gpc = allgs[i].gopc
@@ -2970,7 +2974,14 @@ func getScheduledGp(gp *g) *g {
 						RunningGoid = gp.goid
 						Record = true
 						Running = true
+						println("Trying to record")
 						dprint(dara.DEBUG, func() { println("gp record status: ",dgStatusStrings[readgstatus(gp)]) })
+						procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+						//This is the record state
+						procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
+						procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
+						procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
+						procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
 						return gp
 					}
 
@@ -2988,9 +2999,9 @@ func getScheduledGp(gp *g) *g {
 					}
 
 					//Should not reach here if record
-					
+
 					replay:
-					
+
 					//If the goroutine in the schedule is ready run it
 					if procchan[DPid].Routines[gp.goid].Gpc == procchan[DPid].RunningRoutine.Gpc &&
 					   procchan[DPid].Routines[gp.goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
@@ -3000,7 +3011,7 @@ func getScheduledGp(gp *g) *g {
 					}
 
 					print("justGot!\n")
-					
+
 
 					/* Attempt 2 read everything off of allgs */
 					/* This did not seem to work, somewhere I was
@@ -3016,7 +3027,7 @@ func getScheduledGp(gp *g) *g {
 					   procchan[DPid].Routines[gp.goid].RoutineCount != procchan[DPid].RunningRoutine.RoutineCount {
 						dprint(dara.DEBUG, func() { println("Unable to schedule g, triaging root cause")})
 						print("notfound!!\n")
-						
+
 						//Find g buy looking in allgs should always
 						//work
 						for i:=0;i<len(allgs);i++{

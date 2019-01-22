@@ -11,7 +11,7 @@ const (
 	//memory. This value can change in the future, for now 5 is the
 	//maximum number of Processes. Invariant: dara.CHANNELS >= procs. TODO
 	//assert this
-	CHANNELS = 5
+	CHANNELS = 4
 
 	//File discriptor for shared memory. This is set in the runscript.
 	DARAFD = 666
@@ -25,6 +25,9 @@ const (
         //dara.PAGESIZE*dara.SHAREDMEMPAGES
 	PAGESIZE = 4096
 	SHAREDMEMPAGES = 65536*4
+
+	// TODO : This must be automated and not hardcoded
+	DARAPROCSIZE = 106791048
 
 	SCHEDLEN = 1000000000
 	PROCS = 3
