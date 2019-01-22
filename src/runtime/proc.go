@@ -2976,12 +2976,6 @@ func getScheduledGp(gp *g) *g {
 						Running = true
 						println("Trying to record")
 						dprint(dara.DEBUG, func() { println("gp record status: ",dgStatusStrings[readgstatus(gp)]) })
-						procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
-						//This is the record state
-						procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
-						procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
-						procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
-						procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
 						return gp
 					}
 
