@@ -2703,7 +2703,7 @@ func LogSchedulingEvent(routine dara.RoutineInfo) {
 	(*e).Epoch = procchan[DPid].Epoch
 
 	//Zero the rest of memory
-	(*e).ELE = dara.EncLogEntry{}	
+	(*e).ELE = dara.EncLogEntry{}
 	(*e).SyscallInfo = dara.GeneralSyscall{}
 	(*e).EM = dara.EncodedMessage{}
 	procchan[DPid].LogIndex++
@@ -2862,15 +2862,17 @@ func initDara() {
 	ScheduleIndex = 0
 	DDebugLevel = dara.DEBUG
 	smptr , err = mmap(nil,dara.SHAREDMEMPAGES*dara.PAGESIZE,_PROT_READ|_PROT_WRITE ,dara.MAP_SHARED,dara.DARAFD,0)
-	switch err {
-		case _EINTR:
-			dprint(dara.WARN, func () { println("EINR") })
-		case _EAGAIN:
-			dprint(dara.WARN, func () { println("EAGAIN") })
-		case _ENOMEM:
-			dprint(dara.WARN, func () { println("ENOMEM") })
-		default:
-			dprint(dara.WARN, func () { println("Unknown Error") })
+	if err != 0 {
+		switch err {
+			case _EINTR:
+				dprint(dara.WARN, func () { println("EINR") })
+			case _EAGAIN:
+				dprint(dara.WARN, func () { println("EAGAIN") })
+			case _ENOMEM:
+				dprint(dara.WARN, func () { println("ENOMEM") })
+			default:
+				dprint(dara.WARN, func () { println("Unknown Error") })
+		}
 	}
 	Running = false
 	procchan = (*[dara.CHANNELS]dara.DaraProc)(smptr)
@@ -2888,7 +2890,6 @@ func initDara() {
 		if allgs[i].goid >= dara.MAXGOROUTINES {
 			panic("GoRoutine number out of range")
 		}
-		println(allgs[i].goid, DPid)
 		procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
 		procchan[DPid].Routines[allgs[i].goid].Gid = int(allgs[i].goid)
 		procchan[DPid].Routines[allgs[i].goid].Gpc = allgs[i].gopc
