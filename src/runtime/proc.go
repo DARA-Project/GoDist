@@ -206,6 +206,9 @@ func main() {
 	}
 	//\@DARA INJECT
 	fn()
+    if DaraInitialised {
+        endDara()
+    }
 	if raceenabled {
 		racefini()
 	}
@@ -2332,6 +2335,7 @@ top:
 		// Either GOMAXPROCS=1 or everybody, except for us, is idle already.
 		// New work can appear from returning syscall/cgocall, network or timers.
 		// Neither of that submits to local run queues, so no point in stealing.
+		dprint(dara.DEBUG, func() { println("Should I be here?") })
 		goto stop
 	}
 	// If number of spinning M's >= number of busy P's, block.
@@ -2907,6 +2911,17 @@ func initDara() {
 	//\DARA
 }
 
+func endDara() {
+    // Indicate that all of the goroutines have run its course.
+    println("Ending dara")
+    for i := 0; i < len(allgs); i++ {
+        procchan[DPid].Routines[allgs[i].goid].Status = _Gdead
+    }
+    println("Prochchan run status is ", procchan[DPid].Run)
+    procchan[DPid].Run = -100
+    DaraInitialised = false
+    atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
+}
 
 //go:yeswritebarrierrec
 func getScheduledGp(gp *g) *g {
@@ -3035,6 +3050,9 @@ func getScheduledGp(gp *g) *g {
 						}
 						//If g is not in allg something is terribly
 						//wrong
+						if gp.gopc != procchan[DPid].RunningRoutine.Gpc {
+							dprint(dara.FATAL, func() { println("Mismatched Gopc", gp.gopc, procchan[DPid].RunningRoutine.Gpc) })
+						}
 						if gp.gopc != procchan[DPid].RunningRoutine.Gpc ||
 						   procchan[DPid].Routines[gp.goid].RoutineCount != procchan[DPid].RunningRoutine.RoutineCount {
 							dprint(dara.FATAL, func() { println("Scheduled G nowhere to be found. Are the recorded and replayed systems the same? Consider rebuilding and trying again") })
@@ -3088,11 +3106,11 @@ func getScheduledGp(gp *g) *g {
 						dprint(dara.DEBUG, func() { println("Trying to Run (", DPid,",",procchan[DPid].Run,",",procchan[DPid].RunningRoutine.Gpc,")") })
 					}// If the g was not found end
 
-						
+
 
 					dprint(dara.DEBUG,func() { println("Running (",DPid,",",gp.goid,",",gp.gopc,")") })
 					dprint(dara.DEBUG, func () {println("gp status: ", dgStatusStrings[readgstatus(gp)]) })
-					
+
 					Running = true
 					return gp
 					//TODO read the state of all runnalbe go routines
