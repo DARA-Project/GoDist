@@ -23,3 +23,14 @@ func Report_Syscall_To_Scheduler(syscallID int, syscallInfo dara.GeneralSyscall)
 	//report_syscall(syscallID, syscallInfo) //TODO remove this it's redundent and slow
 	LogSyscall(syscallInfo)
 }
+
+func dara_Stack() []byte {
+	buf := make([]byte, 1024)
+	for {
+		n := Stack(buf, false)
+		if n < len(buf) {
+			return buf[:n]
+		}
+		buf = make([]byte, 2*len(buf))
+	}
+}

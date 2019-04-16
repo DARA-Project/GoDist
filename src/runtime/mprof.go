@@ -778,6 +778,7 @@ func saveg(pc, sp uintptr, gp *g, r *StackRecord) {
 // If all is true, Stack formats stack traces of all other goroutines
 // into buf after the trace for the current goroutine.
 func Stack(buf []byte, all bool) int {
+    print("Inside stack function")
 	if all {
 		stopTheWorld("stack trace")
 	}
