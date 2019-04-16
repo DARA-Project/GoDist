@@ -2921,6 +2921,7 @@ func initDara() {
 	LastProc = -1
 	LastProcCounter = 0
 	ProcInit = true
+    Running = true
 	RunIndex = 0
 	ScheduleIndex = 0
 	DDebugLevel = dara.DEBUG
@@ -2937,7 +2938,6 @@ func initDara() {
 				dprint(dara.WARN, func () { println("[GoRuntime]initDara : Unknown Error") })
 		}
 	}
-	Running = false
 	procchan = (*[dara.CHANNELS]dara.DaraProc)(smptr)
 
 
@@ -3009,6 +3009,7 @@ func getScheduledGp(gp *g) *g {
 		if Running {
 			//report updates to state and unlock variable TODO this
 			//must be more expressive
+            dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Inside running")})
 			if procchan[DPid].Run == -3 {
 				//NOTE THIS IS BUG BUG BUG probable look here first if
 				//the refactoring breaks July24-2018
@@ -3041,7 +3042,9 @@ func getScheduledGp(gp *g) *g {
 			dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduleGp : Unlocking global lock on process ",DPid)})
 			atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED) //TODO unlock using scheduler api
             HasDaraLock = false
-		}
+		} else {
+            dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Not Inside running")})
+        }
 
 		//dprint(dara.DEBUG, func() {println("Waiting for next goroutine to schedule on process ",DPid) })
 		//if end_of_Replay {
@@ -3055,6 +3058,13 @@ func getScheduledGp(gp *g) *g {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
                 HasDaraLock = true
+                //dprint(dara.DEBUG, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
+                if procchan[DPid].Run == 0 {
+                    // Waiting for command from Global Scheduler. give up lock
+					atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED)
+                    HasDaraLock = false
+                    continue
+                }
 				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
 					//print("active")
 					if procchan[DPid].Run == -2 {
