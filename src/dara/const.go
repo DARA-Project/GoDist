@@ -37,7 +37,9 @@ const (
 	MAXLOGVARIABLES = 128
 	VARBUFLEN = 64
 	UNSUPPORTEDVAL = 2440
+)
 
+const (
 	//debug levels
 	DEBUG = iota
 	INFO

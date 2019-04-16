@@ -2925,7 +2925,13 @@ func initDara() {
     Running = true
 	RunIndex = 0
 	ScheduleIndex = 0
-	DDebugLevel = dara.DEBUG
+    if level, ok := atoi(gogetenv("DARA_LOG_LEVEL")); ok {
+        DDebugLevel = int(level)
+        println("Setting debug level to", DDebugLevel)
+    } else {
+        DDebugLevel = dara.INFO
+    }
+
 	smptr , err = mmap(nil,dara.SHAREDMEMPAGES*dara.PAGESIZE,_PROT_READ|_PROT_WRITE ,dara.MAP_SHARED,dara.DARAFD,0)
 	if err != 0 {
 		switch err {
@@ -2940,7 +2946,6 @@ func initDara() {
 		}
 	}
 	procchan = (*[dara.CHANNELS]dara.DaraProc)(smptr)
-
 
 	if pid, ok := atoi32(gogetenv("DARAPID")); ok {
 		DPid = int(pid)
@@ -4292,7 +4297,7 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 			procchan[DPid].Routines[newg.goid].FuncInfo[i] = name[i]
 			//print(string(procchan[DPid].Routines[newg.goid].FuncInfo[i]))
 		}
-		println("[GoRuntime]Launching new thread at func:",name)
+		dprint(dara.DEBUG, func() {println("[GoRuntime]Launching new thread at func:",name)})
 		//print("-BYTE-",string(procchan[DPid].Routines[newg.goid].FuncInfo[:64]),"\n")
 
 
