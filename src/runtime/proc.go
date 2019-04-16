@@ -2728,6 +2728,7 @@ func LogEndEvent() {
 	(*e).SyscallInfo = dara.GeneralSyscall{}
 	(*e).EM = dara.EncodedMessage{}
 	procchan[DPid].LogIndex++
+    dprint(dara.DEBUG, func () {println("[GoRoutine]LogEndEvent : LogIndex after logging end event is", procchan[DPid].LogIndex)})
 }
 
 func LogSchedulingEvent(routine dara.RoutineInfo) {
@@ -2947,6 +2948,12 @@ func initDara() {
 	}
 	//Set up goid table for the inital threads?
 
+
+	if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) {
+        dprint(dara.DEBUG, func() {println("[GoRuntime]initDara : Obtained Shared mem lock for the first time")})
+        HasDaraLock = true
+    }
+
 	for i := 0; i < len(allgs); i++ {
 		//set everything including status
 		if allgs[i].goid >= dara.MAXGOROUTINES {
@@ -2967,12 +2974,13 @@ func initDara() {
 	atomic.Store(&(procchan[DPid].SyscallLock), dara.LOCKED)
 	DaraInitialised = true
     LogInitEvent()
+    dprint(dara.DEBUG, func() {println("[GoRuntime]initDara : Dara Initialization Complete")})
 	//\DARA
 }
 
 func endDara() {
     // Indicate that all of the goroutines have run its course.
-    println("Ending dara")
+    dprint(dara.DEBUG, func() { println("[GoRuntime]endDara : Ending dara")})
     for i := 0; i < len(allgs); i++ {
         procchan[DPid].Routines[allgs[i].goid].Status = _Gdead
     }
@@ -2980,6 +2988,8 @@ func endDara() {
     procchan[DPid].Run = -100
     DaraInitialised = false
     LogEndEvent()
+    HasDaraLock = false
+    dprint(dara.DEBUG, func() { println("[GoRuntime]endDara : Dara end sequence completed")})
     atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
 }
 
@@ -3030,6 +3040,7 @@ func getScheduledGp(gp *g) *g {
 			Running = false
 			dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduleGp : Unlocking global lock on process ",DPid)})
 			atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED) //TODO unlock using scheduler api
+            HasDaraLock = false
 		}
 
 		//dprint(dara.DEBUG, func() {println("Waiting for next goroutine to schedule on process ",DPid) })
@@ -3043,6 +3054,7 @@ func getScheduledGp(gp *g) *g {
 		for {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
+                HasDaraLock = true
 				if procchan[DPid].Run != -1  { //&& procchan[DPid].Run != -2 && procchan[DPid].Run != -3 {
 					//print("active")
 					if procchan[DPid].Run == -2 {
@@ -3069,10 +3081,12 @@ func getScheduledGp(gp *g) *g {
                         // -> Nope it is not. We need to let the runtime end on its own
 						//for { exit(0) }
 						//throw("exiting...")
+                        HasDaraLock = false
 					}
 					//TODO does this ever get hit
 					if Record {
 						atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED) //TODO unlock using scheduler api
+                        HasDaraLock = false
 						continue
 					}
 
@@ -3087,8 +3101,6 @@ func getScheduledGp(gp *g) *g {
 					} else {
 						gp = findallrunnableprocs(gp)
 					}
-
-					print("justGot!\n")
 
 
 					/* Attempt 2 read everything off of allgs */
@@ -3427,14 +3439,13 @@ var (
 	RunningGoid int64
 	Record bool =false
 	DaraInitialised bool =false
+    HasDaraLock bool = false
 )
 
 type Schedule struct {
 	Id int64
 	Pc uintptr
 }
-
-
 
 
 // dropg removes the association between m and the current goroutine m->curg (gp for short).
