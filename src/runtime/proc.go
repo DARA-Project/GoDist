@@ -3017,17 +3017,17 @@ func getScheduledGp(gp *g) *g {
 			//must be more expressive
             dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Inside running")})
             // Possible BUG : Something is wrong with RunningGoid. Trace the value of this to make sense as to what the fuck is this
-			if procchan[DPid].Run == -3 && RunningGoid != 0{
+			if procchan[DPid].Run == -3 {
                 dprint(dara.DEBUG, func () {println("[GoRuntime]getScheduledGp : Reporting Scheduling event with GoID", RunningGoid, origgp.goid)})
 				//NOTE THIS IS BUG BUG BUG probable look here first if
 				//the refactoring breaks July24-2018
-				//procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+				procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
 				//This is the record state
-				procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
-				procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
-				procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
-				procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
-				LogSchedulingEvent(procchan[DPid].RunningRoutine)
+				//procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
+				//procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
+				//procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
+				//procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
+				//LogSchedulingEvent(procchan[DPid].RunningRoutine)
 				//Treat scheduling event as a special event rather
 				//than as a first class citizen
 
@@ -3054,20 +3054,13 @@ func getScheduledGp(gp *g) *g {
             dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Not Inside running")})
         }
 
-		//dprint(dara.DEBUG, func() {println("Waiting for next goroutine to schedule on process ",DPid) })
-		//if end_of_Replay {
-		//	dprint(dara.DEBUG, func() {println("End of replay")})
-		//} else {
-		//	dprint(dara.DEBUG, func() {println("Continuing with RUN variable value", procchan[DPid].Run)})
-		//}
-		//schedtrace(true)
 		//wait for the global scheduler
 		for {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
                 HasDaraLock = true
                 //dprint(dara.DEBUG, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
-                if procchan[DPid].Run == 0 {
+                if procchan[DPid].Run >= 0 {
                     // Waiting for command from Global Scheduler. give up lock
 					atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED)
                     HasDaraLock = false
@@ -3077,7 +3070,7 @@ func getScheduledGp(gp *g) *g {
 					//print("active")
 					if procchan[DPid].Run == -2 {
 						//first instance
-						dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduledGp : first instance")})
+						dprint(dara.INFO, func() {println("[GoRoutine]getScheduledGp : first instance")})
 						Running = true
 						return gp
 					}
@@ -3087,18 +3080,19 @@ func getScheduledGp(gp *g) *g {
 						RunningGoid = gp.goid
 						Record = true
 						Running = true
-						dprint(dara.DEBUG, func() { println("[GoRoutine]getScheduledGp : gp record status: ",dgStatusStrings[readgstatus(gp)]) })
+						//dprint(dara.DEBUG, func() { println("[GoRoutine]getScheduledGp : gp record status: ",dgStatusStrings[readgstatus(gp)]) })
+                        dprint(dara.INFO, func() {println("[GoRoutine]getScheduledGp : Running goroutine with id :",gp.goid)})
+				        procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
+				        procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
+				        procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
+				        procchan[DPid].RunningRoutine.RoutineCount = procchan[DPid].Routines[int(RunningGoid)].RoutineCount
+				        LogSchedulingEvent(procchan[DPid].RunningRoutine)
 						return gp
 					}
 
 					if procchan[DPid].Run == -4 {
 						atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED)
 						dprint(dara.DEBUG, func() { println("[GoRoutine]getScheduledGp : Received ending message from Global Scheduler") })
-						//TODO exit without panicing
-                        // Is this the correct behavior?????
-                        // -> Nope it is not. We need to let the runtime end on its own
-						//for { exit(0) }
-						//throw("exiting...")
                         HasDaraLock = false
 					}
 					//TODO does this ever get hit
