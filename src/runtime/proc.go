@@ -3060,7 +3060,7 @@ func getScheduledGp(gp *g) *g {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
                 HasDaraLock = true
-                //dprint(dara.DEBUG, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
+                //dprint(dara.INFO, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
                 if procchan[DPid].Run >= 0 {
                     // Waiting for command from Global Scheduler. give up lock
 					atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED)
@@ -3204,6 +3204,8 @@ func getScheduledGp(gp *g) *g {
 					dprint(dara.DEBUG, func () {println("[GoRoutine]getScheduledGp : gp status: ", dgStatusStrings[readgstatus(gp)]) })
 
 					Running = true
+                    dprint(dara.INFO, func() {println("[GoRoutine]getScheduledGp : Running", gp.goid)})
+                    LogSchedulingEvent(procchan[DPid].Routines[int(gp.goid)])
 					return gp
 					//TODO read the state of all runnalbe go routines
 					//TODO update shared memory table for each goroutine
