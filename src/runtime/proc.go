@@ -204,6 +204,7 @@ func main() {
 	if gogetenv("DARAON") == "true" {
 		initDara()
         RunningGoid = g.goid
+        LogSchedulingEvent(procchan[DPid].Routines[int(RunningGoid)])
 	}
 	//\@DARA INJECT
 	fn()
@@ -3081,7 +3082,7 @@ func getScheduledGp(gp *g) *g {
 						Record = true
 						Running = true
 						//dprint(dara.DEBUG, func() { println("[GoRoutine]getScheduledGp : gp record status: ",dgStatusStrings[readgstatus(gp)]) })
-                        dprint(dara.INFO, func() {println("[GoRoutine]getScheduledGp : Running goroutine with id :",gp.goid)})
+                        dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduledGp : Running goroutine with id :",gp.goid)})
 				        procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
 				        procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
 				        procchan[DPid].RunningRoutine.Gpc = procchan[DPid].Routines[int(RunningGoid)].Gpc
