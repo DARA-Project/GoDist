@@ -203,6 +203,7 @@ func main() {
 	//@DARA INJET
 	if gogetenv("DARAON") == "true" {
 		initDara()
+        RunningGoid = g.goid
 	}
 	//\@DARA INJECT
 	fn()
@@ -3010,10 +3011,12 @@ func getScheduledGp(gp *g) *g {
 			//report updates to state and unlock variable TODO this
 			//must be more expressive
             dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Inside running")})
-			if procchan[DPid].Run == -3 {
+            // Possible BUG : Something is wrong with RunningGoid. Trace the value of this to make sense as to what the fuck is this
+			if procchan[DPid].Run == -3 && RunningGoid != 0{
+                dprint(dara.DEBUG, func () {println("[GoRuntime]getScheduledGp : Reporting Scheduling event with GoID", RunningGoid, origgp.goid)})
 				//NOTE THIS IS BUG BUG BUG probable look here first if
 				//the refactoring breaks July24-2018
-				procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
+				//procchan[DPid].Run = int(RunningGoid) //use the channel in the opposite direction
 				//This is the record state
 				procchan[DPid].RunningRoutine.Status = procchan[DPid].Routines[int(RunningGoid)].Status
 				procchan[DPid].RunningRoutine.Gid = procchan[DPid].Routines[int(RunningGoid)].Gid
@@ -3357,7 +3360,7 @@ func CheckAndResetProcArr(gp *g) (*g, bool) {
 	return gp, found
 }
 
-
+//Dara internal function
 func dprint(loglevel int, pfunc func()) {
 	if !ProcInit || DDebugLevel == dara.OFF {
 		return
@@ -3398,7 +3401,7 @@ func procLookup(gp *g) (int64, bool) {
 	}
 	if ProcArr[gp.goid] == gp {
 		return gp.goid, true
-	} 
+	}
 	//print("gp pointer compairison failed\n")
 	return -3, false
 }
