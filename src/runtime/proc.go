@@ -319,6 +319,7 @@ func goparkunlock(lock *mutex, reason string, traceEv byte, traceskip int) {
 }
 
 func goready(gp *g, traceskip int) {
+    dprint(dara.INFO, func() {println("[GoRoutine]goready : Adding goroutine",gp.goid,"to ready queue")})
 	systemstack(func() {
 		ready(gp, traceskip, true)
 	})
@@ -1963,6 +1964,7 @@ func templateThread() {
 // Stops execution of the current m until new work is available.
 // Returns with acquired P.
 func stopm() {
+    dprint(dara.DEBUG, func() {println("[GoRuntime]stopm : Inside stopm")})
 	_g_ := getg()
 
 	if _g_.m.locks != 0 {
@@ -1976,12 +1978,15 @@ func stopm() {
 	}
 
 retry:
+    dprint(dara.DEBUG, func() {println("[GoRuntime]stopm : Inside retry")})
 	lock(&sched.lock)
 	mput(_g_.m)
 	unlock(&sched.lock)
 	//schedtrace(true)
+    dprint(dara.DEBUG, func() {println("[GoRuntime]stopm : Calling notesleep")})
 	notesleep(&_g_.m.park)
 	//DARA NOTE this has the potential to stop
+    dprint(dara.DEBUG, func() {println("[GoRuntime]stopm : Calling noteclear")})
 	noteclear(&_g_.m.park)
 	if _g_.m.helpgc != 0 {
 		// helpgc() set _g_.m.p and _g_.m.mcache, so we have a P.
@@ -2271,6 +2276,7 @@ func execute(gp *g, inheritTime bool) {
 // Finds a runnable goroutine to execute.
 // Tries to steal from other P's, get g from global queue, poll network.
 func findrunnable() (gp *g, inheritTime bool) {
+    //dprint(dara.INFO, func(){println("Inside findrunnable")})
 	_g_ := getg()
 
 	// The conditions here and in handoffp must agree: if
@@ -2331,6 +2337,28 @@ top:
 			return gp, false
 		}
 	}
+
+    if DaraInitialised {
+        numRunnable := 0
+        // Dara Inject
+        // Check allgs. Some sleeping thread might have woken up and may have been removed from the ready queue
+        // Re-add them to the ready queue so that the global scheduler can choose the next option
+	    for i := 0; i < len(allgs); i++ {
+		    gp := allgs[i]
+		    s := readgstatus(gp)
+            switch s {
+		        case _Grunnable:
+                    numRunnable++
+                    // Need to set the status to waiting to trick ready function into thinking that this is a legitmate call to ready
+                    atomic.Cas(&gp.atomicstatus,_Grunnable,_Gwaiting)
+                    goready(gp, 0)
+            }
+        }
+        if numRunnable > 0 {
+            dprint(dara.INFO, func(){println("[GoRuntime]findrunnable - found", numRunnable,"runnable goroutines not on any queue")})
+            goto top
+        }
+    }
 
 	// Steal work from other P's.
 	procs := uint32(gomaxprocs)
@@ -3048,7 +3076,7 @@ func getScheduledGp(gp *g) *g {
             }
 			//Unlock
 			Running = false
-			dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduleGp : Unlocking global lock on process ",DPid)})
+			dprint(dara.DEBUG, func() {println("[GoRoutine]getScheduledGp : Unlocking global lock on process ",DPid)})
 			atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED) //TODO unlock using scheduler api
             HasDaraLock = false
 		} else {
@@ -5484,6 +5512,7 @@ func schedtrace(detailed bool) {
 // May run during STW, so write barriers are not allowed.
 //go:nowritebarrierrec
 func mput(mp *m) {
+    dprint(dara.INFO, func(){println("[GoRuntime]mput : Inside mput")})
 	mp.schedlink = sched.midle
 	sched.midle.set(mp)
 	sched.nmidle++

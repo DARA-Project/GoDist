@@ -129,6 +129,7 @@ func stopTimer(t *timer) bool {
 
 // Ready the goroutine arg.
 func goroutineReady(arg interface{}, seq uintptr) {
+    dprint(dara.INFO, func() {println("[GoRoutine]goroutineReady : Goroutine that woke up :", arg.(*g).goid)})
 	goready(arg.(*g), 0)
 }
 
