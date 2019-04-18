@@ -83,6 +83,7 @@ var faketime int64
 // timeSleep puts the current goroutine to sleep for at least ns nanoseconds.
 //go:linkname timeSleep time.Sleep
 func timeSleep(ns int64) {
+    //Dara injection
     if Is_dara_profiling_on() {
         println("[SLEEP]", ns)
         argInfo := dara.GeneralType{Type: dara.INTEGER64, Integer64: ns}
@@ -92,7 +93,6 @@ func timeSleep(ns int64) {
 	if ns <= 0 {
 		return
 	}
-
 	gp := getg()
 	t := gp.timer
 	if t == nil {
@@ -100,6 +100,18 @@ func timeSleep(ns int64) {
 		gp.timer = t
 	}
 	*t = timer{}
+    //Dara injection
+    if Replay {
+        dprint(dara.INFO, func () {println("[GoRoutine]timeSleep : Goroutine here for nap time")})
+        //Don't install the timer in replay but obtain the lock :)
+        tb := t.assignBucket()
+        lock(&tb.lock)
+        goparkunlock(&tb.lock, "sleep", traceEvGoSleep, 2)
+        return
+    }
+    if Replay {
+        dprint(dara.INFO, func () {println("[GoRuntime]timeSleep : We shouldn't be here wtf")})
+    }
 	t.when = nanotime() + ns
 	t.f = goroutineReady
 	t.arg = gp
