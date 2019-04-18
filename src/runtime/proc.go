@@ -3536,7 +3536,7 @@ func park_m(gp *g) {
 
     //Dara's way of handling sleeping threads during replay
     //Instead of making the threads wait, put them on the ready queue instead
-    if Replay && gp.waitreason == "sleep" {
+    if (Replay || Explore) && gp.waitreason == "sleep" {
         ready(gp,0,true)
     }
 

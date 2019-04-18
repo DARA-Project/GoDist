@@ -101,7 +101,7 @@ func timeSleep(ns int64) {
 	}
 	*t = timer{}
     //Dara injection
-    if Replay {
+    if Replay || Explore {
         dprint(dara.INFO, func () {println("[GoRoutine]timeSleep : Goroutine here for nap time")})
         //Don't install the timer in replay but obtain the lock :)
         tb := t.assignBucket()
