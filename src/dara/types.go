@@ -31,6 +31,7 @@ const (
     INIT_EVENT
     END_EVENT
     THREAD_EVENT
+    CRASH_EVENT
 )
 
 
