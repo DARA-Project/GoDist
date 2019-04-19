@@ -307,6 +307,7 @@ func gopark(unlockf func(*g, unsafe.Pointer) bool, lock unsafe.Pointer, reason s
 	gp.waitreason = reason
 	mp.waittraceev = traceEv
 	mp.waittraceskip = traceskip
+    dprint(dara.DEBUG, func() {println("[GoRuntime]gopark : Parking m because of reason",reason)})
 	releasem(mp)
 	// can't do anything that might move the G between Ms here.
 	mcall(park_m)
@@ -1263,6 +1264,7 @@ func mstart1(dummy int32) {
 		acquirep(_g_.m.nextp.ptr())
 		_g_.m.nextp = 0
 	}
+    dprint(dara.DEBUG, func() {println("[GoRuntime]mstart1 : Scheduling inside mstart1")})
 	schedule()
 }
 
@@ -1707,6 +1709,7 @@ func oneNewExtraM() {
 		gp.racectx = racegostart(funcPC(newextram) + sys.PCQuantum)
 	}
 	// put on allg for garbage collector
+    dprint(dara.DEBUG, func(){println("[GoRoutine]oneNewExtraM : Adding garbage collector thread to allgs")})
 	allgadd(gp)
 
 	// gp is now on the allg list, but we don't want it to be
@@ -3571,6 +3574,7 @@ func park_m(gp *g) {
 			execute(gp, true) // Schedule it back, never returns.
 		}
 	}
+    dprint(dara.DEBUG, func() {println("[GoRuntime]park_m : Scheduling inside park_m")})
 	schedule()
 }
 
@@ -3586,6 +3590,7 @@ func goschedImpl(gp *g) {
 	globrunqput(gp)
 	unlock(&sched.lock)
 
+    dprint(dara.DEBUG, func() {println("[GoRuntime]goSchedImpl : Scheduling inside goschedImpl")})
 	schedule()
 }
 
@@ -3680,6 +3685,7 @@ func goexit0(gp *g) {
 			gogo(&_g_.m.g0.sched)
 		}
 	}
+    dprint(dara.DEBUG, func() {println("[GoRoutine]goexit0 : Scheduling inside goexti0")})
 	schedule()
 }
 
