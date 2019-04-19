@@ -109,8 +109,8 @@ func timeSleep(ns int64) {
         goparkunlock(&tb.lock, "sleep", traceEvGoSleep, 2)
         return
     }
-    if Replay {
-        dprint(dara.INFO, func () {println("[GoRuntime]timeSleep : We shouldn't be here wtf")})
+    if Replay || Explore{
+        dprint(dara.WARN, func () {println("[GoRuntime]timeSleep : We shouldn't be here wtf")})
     }
 	t.when = nanotime() + ns
 	t.f = goroutineReady

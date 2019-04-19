@@ -16,6 +16,7 @@
 package rand
 
 import "sync"
+import "runtime"
 
 // A Source represents a source of uniformly-distributed
 // pseudo-random int64 values in the range [0, 1<<63).
@@ -70,7 +71,9 @@ func New(src Source) *Rand {
 // Seed should not be called concurrently with any other Rand method.
 func (r *Rand) Seed(seed int64) {
 	//@DARA INJECT
-	seed = 0
+    if runtime.DaraInitialised {
+	    seed = 0
+    }
 	//@DARA /INJECT
 	if lk, ok := r.src.(*lockedSource); ok {
 		lk.seedPos(seed, &r.readPos)
