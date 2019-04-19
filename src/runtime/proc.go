@@ -2798,6 +2798,24 @@ func LogThreadCreation(routine dara.RoutineInfo) {
 	procchan[DPid].LogIndex++
 }
 
+func LogCrash(routine dara.RoutineInfo) {
+    index := procchan[DPid].LogIndex
+    if index >= dara.MAXLOGENTRIES {
+        throw("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+    }
+    e := &(procchan[DPid].Log[index])
+    (*e).Type = dara.CRASH_EVENT
+    (*e).P = DPid
+    (*e).G = routine
+    (*e).Epoch = procchan[DPid].Epoch
+
+	//Zero the rest of memory
+	(*e).ELE = dara.EncLogEntry{}
+	(*e).SyscallInfo = dara.GeneralSyscall{}
+	(*e).EM = dara.EncodedMessage{}
+	procchan[DPid].LogIndex++
+}
+
 func LogSyscall(syscallInfo dara.GeneralSyscall) {
 	if DaraInitialised {
 		index := procchan[DPid].LogIndex

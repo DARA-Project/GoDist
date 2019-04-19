@@ -9,6 +9,7 @@ package runtime
 import (
 	"runtime/internal/atomic"
 	"unsafe"
+    "dara"
 )
 
 // sigTabT is the type of an entry in the global sigtable array.
@@ -505,6 +506,7 @@ func raisebadsignal(sig uint32, c *sigctxt) {
 }
 
 func crash() {
+    dprint(dara.INFO, func() {println("[GoRoutine]crash : Inside crash")})
 	if GOOS == "darwin" {
 		// OS X core dumps are linear dumps of the mapped memory,
 		// from the first virtual byte to the last, with zeros in the gaps.
