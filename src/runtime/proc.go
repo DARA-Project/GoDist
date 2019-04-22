@@ -2755,6 +2755,7 @@ func LogEndEvent() {
     (*e).Type = dara.END_EVENT
     (*e).P = DPid
 	//Zero the rest of memory
+    //dprint(dara.INFO, func() {println("[GoRuntime]LogEndEvent : Running Routine is", procchan[DPid].RunningRoutine.Gid)})
     (*e).G = procchan[DPid].RunningRoutine
     (*e).Epoch = procchan[DPid].Epoch
 	(*e).ELE = dara.EncLogEntry{}
@@ -2831,6 +2832,7 @@ func LogSyscall(syscallInfo dara.GeneralSyscall) {
 		e := &(procchan[DPid].Log[index])
 		(*e).Type = dara.SYSCALL_EVENT
 		(*e).P = DPid
+        //dprint(dara.INFO, func() {println("[GoRuntime]LogSyscall : Running Routine is", procchan[DPid].RunningRoutine.Gid)})
 		(*e).G = procchan[DPid].RunningRoutine //Redundent reporting for ease
 		(*e).Epoch = procchan[DPid].Epoch
 
@@ -2977,7 +2979,7 @@ func initDara() {
 	ScheduleIndex = 0
     if level, ok := atoi(gogetenv("DARA_LOG_LEVEL")); ok {
         DDebugLevel = int(level)
-        println("Setting debug level to", DDebugLevel)
+        println("[GoRuntime]Setting debug level to", DDebugLevel)
     } else {
         DDebugLevel = dara.INFO
     }
@@ -3023,9 +3025,16 @@ func initDara() {
 		if allgs[i].goid >= dara.MAXGOROUTINES {
 			panic("GoRoutine number out of range")
 		}
+        f := findfunc(allgs[i].gopc)
+        fname := funcname(f)
+        if allgs[i].goid == 1 {
+            fname = "main.main"
+        }
 		procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
 		procchan[DPid].Routines[allgs[i].goid].Gid = int(allgs[i].goid)
 		procchan[DPid].Routines[allgs[i].goid].Gpc = allgs[i].gopc
+        copy(procchan[DPid].Routines[allgs[i].goid].FuncInfo[:], fname)
+        dprint(dara.DEBUG, func() {println("[GoRuntime]initDara : Goroutine", allgs[i].goid, "is running", fname)})
 		var duplicateCounter = 1
 		for j := 0; j < len(procchan[DPid].Routines); j++ {
 			if procchan[DPid].Routines[i].Gpc > 0 && procchan[DPid].Routines[j].Gpc == allgs[i].gopc {
@@ -3037,6 +3046,7 @@ func initDara() {
 
 	atomic.Store(&(procchan[DPid].SyscallLock), dara.LOCKED)
 	DaraInitialised = true
+    procchan[DPid].RunningRoutine = procchan[DPid].Routines[1]
     LogInitEvent()
     dprint(dara.DEBUG, func() {println("[GoRuntime]initDara : Dara Initialization Complete")})
 	//\DARA
