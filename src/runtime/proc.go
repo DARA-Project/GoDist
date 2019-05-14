@@ -5222,6 +5222,11 @@ func checkdead() {
 	}
 
 	getg().m.throwing = -1 // do not dump full stacks
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]checkdead : Found deadlock")})
+        //LogCrash(procchan[DPid].Routines[int(getg().m.curg.goid)])
+        //endDara()
+    }
 	throw("all goroutines are asleep - deadlock!")
 }
 
