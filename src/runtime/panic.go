@@ -623,6 +623,11 @@ func throw(s string) {
 	if gp.m.throwing == 0 {
 		gp.m.throwing = 1
 	}
+    if DaraInitialised {
+        dprint(dara.INFO, func() {println("[GoRuntime]throw : Inside throw now")})
+        LogCrash(procchan[DPid].Routines[int(gp.goid)])
+        endDara()
+    }
 	startpanic()
 	dopanic(0)
 	*(*int)(nil) = 0 // not reached

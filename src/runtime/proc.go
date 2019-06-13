@@ -2746,6 +2746,7 @@ func LogInitEvent() {
 	procchan[DPid].LogIndex++
 }
 
+//go:yeswritebarrierrec
 func LogEndEvent() {
     index := procchan[DPid].LogIndex
     if index >= dara.MAXLOGENTRIES {
@@ -2802,6 +2803,7 @@ func LogThreadCreation(routine dara.RoutineInfo) {
 	procchan[DPid].LogIndex++
 }
 
+//go:yeswritebarrierrec
 func LogCrash(routine dara.RoutineInfo) {
     index := procchan[DPid].LogIndex
     if index >= dara.MAXLOGENTRIES {
