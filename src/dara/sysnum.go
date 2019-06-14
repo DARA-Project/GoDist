@@ -68,5 +68,9 @@ const (
     DSYS_SLEEP
     MUX_LOCK
     MUX_UNLOCK
+    WG_ADD
+    WG_WAIT
+    CTX_DONE
+    CTX_CANCEL
 )
 
