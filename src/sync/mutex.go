@@ -212,7 +212,7 @@ func (m *Mutex) Unlock() {
 			if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken|mutexStarving) != 0 {
                 if runtime.Is_dara_profiling_on() {
                     print("[Mutex.Unlock] : ")
-                    print(m)
+                    println(m)
 
                     syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
                     runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
@@ -225,7 +225,7 @@ func (m *Mutex) Unlock() {
 				runtime_Semrelease(&m.sema, false)
                 if runtime.Is_dara_profiling_on() {
                     print("[Mutex.Unlock] : ")
-                    print(m)
+                    println(m)
 
                     syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
                     runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
