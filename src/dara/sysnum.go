@@ -66,5 +66,7 @@ const (
 	DSYS_SOCKET
 	DSYS_LISTEN_TCP
     DSYS_SLEEP
+    MUX_LOCK
+    MUX_UNLOCK
 )
 

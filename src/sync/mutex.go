@@ -14,6 +14,8 @@ import (
 	"internal/race"
 	"sync/atomic"
 	"unsafe"
+    "runtime"
+    "dara"
 )
 
 func throw(string) // provided by runtime
@@ -75,6 +77,13 @@ func (m *Mutex) Lock() {
 		if race.Enabled {
 			race.Acquire(unsafe.Pointer(m))
 		}
+        if runtime.Is_dara_profiling_on() {
+            print("[Mutex.Lock] : ")
+            println(m)
+
+            syscallInfo := dara.GeneralSyscall{dara.MUX_LOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+            runtime.Report_Syscall_To_Scheduler(dara.MUX_LOCK, syscallInfo)
+        }
 		return
 	}
 
@@ -164,6 +173,14 @@ func (m *Mutex) Lock() {
 	if race.Enabled {
 		race.Acquire(unsafe.Pointer(m))
 	}
+
+    if runtime.Is_dara_profiling_on() {
+        print("[Mutex.Lock] : ")
+        println(m)
+
+        syscallInfo := dara.GeneralSyscall{dara.MUX_LOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+        runtime.Report_Syscall_To_Scheduler(dara.MUX_LOCK, syscallInfo)
+    }
 }
 
 // Unlock unlocks m.
@@ -193,12 +210,26 @@ func (m *Mutex) Unlock() {
 			// since we did not observe mutexStarving when we unlocked the mutex above.
 			// So get off the way.
 			if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken|mutexStarving) != 0 {
+                if runtime.Is_dara_profiling_on() {
+                    print("[Mutex.Unlock] : ")
+                    print(m)
+
+                    syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+                    runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
+                }
 				return
 			}
 			// Grab the right to wake someone.
 			new = (old - 1<<mutexWaiterShift) | mutexWoken
 			if atomic.CompareAndSwapInt32(&m.state, old, new) {
 				runtime_Semrelease(&m.sema, false)
+                if runtime.Is_dara_profiling_on() {
+                    print("[Mutex.Unlock] : ")
+                    print(m)
+
+                    syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+                    runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
+                }
 				return
 			}
 			old = m.state
@@ -210,4 +241,12 @@ func (m *Mutex) Unlock() {
 		// so new coming goroutines won't acquire it.
 		runtime_Semrelease(&m.sema, true)
 	}
+
+    if runtime.Is_dara_profiling_on() {
+        print("[Mutex.Unlock] : ")
+        print(m)
+
+        syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
+        runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
+    }
 }
