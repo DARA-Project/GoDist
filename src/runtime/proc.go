@@ -2994,6 +2994,11 @@ func initDara() {
             Explore = true
     }
 
+    fast_replay := gogetenv("FAST_REPLAY")
+    if fast_replay == "true" {
+        FastReplay = true
+    }
+
 	smptr , err = mmap(nil,dara.SHAREDMEMPAGES*dara.PAGESIZE,_PROT_READ|_PROT_WRITE ,dara.MAP_SHARED,dara.DARAFD,0)
 	if err != 0 {
 		switch err {
@@ -3126,7 +3131,7 @@ func getScheduledGp(gp *g) *g {
 
 		//wait for the global scheduler
 		for {
-			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) { //TODO use scheduler shared mem
+			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) {
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
                 HasDaraLock = true
                 //dprint(dara.INFO, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
@@ -3527,6 +3532,7 @@ var (
 	Record bool =false
     Replay bool =false
     Explore bool=false
+    FastReplay bool=false
 	DaraInitialised bool =false
     HasDaraLock bool = false
 )
