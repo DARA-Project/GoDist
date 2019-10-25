@@ -2749,6 +2749,7 @@ func LogInitEvent() {
 //go:yeswritebarrierrec
 func LogEndEvent() {
     index := procchan[DPid].LogIndex
+    if FastReplay { return }
     if index >= dara.MAXLOGENTRIES {
 		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
     }
@@ -2768,6 +2769,7 @@ func LogEndEvent() {
 
 func LogSchedulingEvent(routine dara.RoutineInfo) {
 	index := procchan[DPid].LogIndex
+    if FastReplay { return }
 	if index >= dara.MAXLOGENTRIES {
 		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
 	}
@@ -2787,6 +2789,7 @@ func LogSchedulingEvent(routine dara.RoutineInfo) {
 
 func LogThreadCreation(routine dara.RoutineInfo) {
     index := procchan[DPid].LogIndex
+    if FastReplay { return }
     if index >= dara.MAXLOGENTRIES {
 		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
     }
@@ -2806,6 +2809,7 @@ func LogThreadCreation(routine dara.RoutineInfo) {
 //go:yeswritebarrierrec
 func LogCrash(routine dara.RoutineInfo) {
     index := procchan[DPid].LogIndex
+    if FastReplay { return }
     if index >= dara.MAXLOGENTRIES {
         throw("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
     }
@@ -2823,7 +2827,7 @@ func LogCrash(routine dara.RoutineInfo) {
 }
 
 func LogSyscall(syscallInfo dara.GeneralSyscall) {
-	if DaraInitialised {
+	if DaraInitialised && !FastReplay {
 		index := procchan[DPid].LogIndex
 		if index >= dara.MAXLOGENTRIES {
 			panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
@@ -3091,6 +3095,7 @@ func getScheduledGp(gp *g) *g {
 			//report updates to state and unlock variable TODO this
 			//must be more expressive
             dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Inside running")})
+            dprint(dara.DEBUG, func() {println("[GoRuntime]getScheduledGp : Value of run variable :", procchan[DPid].Run)})
             // Possible BUG : Something is wrong with RunningGoid. Trace the value of this to make sense as to what the fuck is this
 			if procchan[DPid].Run == -3 {
                 dprint(dara.DEBUG, func () {println("[GoRuntime]getScheduledGp : Reporting Scheduling event with GoID", RunningGoid, origgp.goid)})
@@ -3108,7 +3113,9 @@ func getScheduledGp(gp *g) *g {
 
 			} else if procchan[DPid].Run == -4 {
 				end_of_Replay = true
-			} else {
+			} else if FastReplay && procchan[DPid].Run == -5 {
+                dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp: Inside Fast Replay mode")})
+            } else {
 				//this is the replay state
 				procchan[DPid].Run = -1
 			}
@@ -3134,6 +3141,9 @@ func getScheduledGp(gp *g) *g {
 			if atomic.Cas(&(procchan[DPid].Lock),dara.UNLOCKED,dara.LOCKED) {
 			//dprint(dara.DEBUG, func() {println("Unlocked")})
                 HasDaraLock = true
+                if procchan[DPid].Run == -5 {
+                    dprint(dara.INFO, func() {println("I am with value -5")})
+                }
                 //dprint(dara.INFO, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
                 if procchan[DPid].Run >= 0 {
                     // Waiting for command from Global Scheduler. give up lock
@@ -3181,8 +3191,16 @@ func getScheduledGp(gp *g) *g {
 					//Should not reach here if record
 
 					replay:
+                    if FastReplay {
+                        dprint(dara.INFO, func() { println("[GoRuntime]getScheduledGp : CurrentFastReplay replay index:", ReplayIndex)})
+                        dprint(dara.INFO, func() { println("[GoRuntime]getScheduledGp : nextProc: ", procchan[DPid].Log[ReplayIndex].G.Gid)})
+                        procchan[DPid].RunningRoutine = procchan[DPid].Log[ReplayIndex].G
+                        ReplayIndex += 1
+                    }
+
                     dprint(dara.INFO, func() {println("[GoRuntime]getScheduledGp : Replay will try to schedule Goroutine #", procchan[DPid].RunningRoutine.Gid)})
 					//If the goroutine in the schedule is ready run it
+
 					if procchan[DPid].Routines[gp.goid].Gpc == procchan[DPid].RunningRoutine.Gpc &&
 					   procchan[DPid].Routines[gp.goid].RoutineCount == procchan[DPid].RunningRoutine.RoutineCount {
 					   dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Chosen goroutine is ready to be run") })
@@ -3529,6 +3547,7 @@ var (
 	DPid int
 	Running bool
 	RunningGoid int64
+    ReplayIndex int=1 //Start at 1 because the main function will be the first thing that needs to be launched
 	Record bool =false
     Replay bool =false
     Explore bool=false
