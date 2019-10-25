@@ -30,7 +30,8 @@ func Getwd() (dir string, err error) {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
 			println("[GETWD]")
-			retInfo1 := dara.GeneralType{Type: dara.STRING, String: dir}
+			retInfo1 := dara.GeneralType{Type: dara.STRING}
+            copy(retInfo1.String[:], dir)
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 			runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -45,7 +46,7 @@ func Getwd() (dir string, err error) {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
 			println("[GETWD]")
-			retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+			retInfo1 := dara.GeneralType{Type: dara.STRING}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 			runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -59,7 +60,8 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: dir}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
+                copy(retInfo1.String[:], dir)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -76,7 +78,8 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: s}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
+                copy(retInfo1.String[:], s)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -95,7 +98,8 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: dir}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
+                copy(retInfo1.String[:], dir)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -112,7 +116,7 @@ func Getwd() (dir string, err error) {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
 			println("[GETWD]")
-			retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+			retInfo1 := dara.GeneralType{Type: dara.STRING}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 			runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -123,7 +127,8 @@ func Getwd() (dir string, err error) {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
 			println("[GETWD]")
-			retInfo1 := dara.GeneralType{Type: dara.STRING, String: "/"}
+			retInfo1 := dara.GeneralType{Type: dara.STRING}
+            copy(retInfo1.String[:], "/")
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 			runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -140,7 +145,7 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -152,7 +157,7 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -167,7 +172,7 @@ func Getwd() (dir string, err error) {
 				// DARA Instrumentation
 				if runtime.Is_dara_profiling_on() {
 					println("[GETWD]")
-					retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+					retInfo1 := dara.GeneralType{Type: dara.STRING}
 					retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 					syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 					runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -189,7 +194,7 @@ func Getwd() (dir string, err error) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
 				println("[GETWD]")
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)
@@ -212,7 +217,8 @@ func Getwd() (dir string, err error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[GETWD]")
-		retInfo1 := dara.GeneralType{Type: dara.STRING, String: dir}
+		retInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(retInfo1.String[:], dir)
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETWD, syscallInfo)

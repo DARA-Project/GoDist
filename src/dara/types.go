@@ -127,7 +127,7 @@ type GeneralType struct {
 	Bool bool
 	Float float32
 	Integer64 int64
-	String string
+	String [256]byte
 	Unsupported rune
 }
 

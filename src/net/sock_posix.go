@@ -45,7 +45,8 @@ func socket(ctx context.Context, net string, family, sotype, proto int, ipv6only
 	if runtime.Is_dara_profiling_on() {
 		println("[SOCKET]")
 		argInfo1 := dara.GeneralType{Type: dara.CONTEXT, Unsupported: dara.UNSUPPORTEDVAL}
-		argInfo2 := dara.GeneralType{Type: dara.STRING, String: net}
+		argInfo2 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo2.String[:], net)
 		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: family}
 		argInfo4 := dara.GeneralType{Type: dara.INTEGER, Integer: sotype}
 		argInfo5 := dara.GeneralType{Type: dara.INTEGER, Integer: proto}

@@ -96,7 +96,8 @@ func (p *Process) signal(sig Signal) error {
 		print(" ")
 		println(s.String())
 		argInfo1 := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
-		argInfo2 := dara.GeneralType{Type: dara.SIGNAL, String: s.String()}
+		argInfo2 := dara.GeneralType{Type: dara.SIGNAL}
+        copy(argInfo2.String[:], s.String())
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo :=  dara.GeneralSyscall{dara.DSYS_KILL, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_KILL, syscallInfo)

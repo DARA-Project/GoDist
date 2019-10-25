@@ -27,7 +27,8 @@ func Executable() (string, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[EXECUTABLE]")
-		retInfo1 := dara.GeneralType{Type: dara.STRING, String: str}
+		retInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(retInfo1.String[:], str)
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_EXECUTABLE, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXECUTABLE, syscallInfo)

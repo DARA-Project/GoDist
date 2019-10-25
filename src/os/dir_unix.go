@@ -37,7 +37,8 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 				print(f.file.name)
 				print(" ")
 				println(n)
-				argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
+				argInfo1 := dara.GeneralType{Type:dara.FILE}
+                copy(argInfo1.String[:], f.name)
 				argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
 				retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
 				retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -59,7 +60,8 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		print(f.file.name)
 		print(" ")
 		println(n)
-		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
 		retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
 		retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -98,7 +100,8 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 					print(f.file.name)
 					print(" ")
 					println(n)
-					argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+					argInfo1 := dara.GeneralType{Type: dara.FILE}
+                    copy(argInfo1.String[:], f.name)
 					argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
 					retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
 					retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -124,7 +127,8 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 			print(f.file.name)
 			print(" ")
 			println(n)
-			argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+			argInfo1 := dara.GeneralType{Type: dara.FILE}
+            copy(argInfo1.String[:], f.name)
 			argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
 			retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -139,7 +143,8 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 		print(f.file.name)
 		print(" ")
 		println(n)
-		argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
 		retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(names)}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}

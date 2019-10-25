@@ -180,7 +180,8 @@ func (c *conn) Read(b []byte) (int, error) {
 			print(" ")
 			println(c.fd.raddr.String())
 			str := c.fd.laddr.String() + c.fd.raddr.String()
-			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+            copy(argInfo1.String[:], str)
 			argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
 			retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -200,7 +201,8 @@ func (c *conn) Read(b []byte) (int, error) {
 		print(" ")
 		println(c.fd.raddr.String())
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
 		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -222,7 +224,8 @@ func (c *conn) Write(b []byte) (int, error) {
 			print(" ")
 			println(string(b[:]))
 			str := c.fd.laddr.String() + c.fd.raddr.String()
-			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+            copy(argInfo1.String[:], str)
 			argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(str)}
 			retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -244,7 +247,8 @@ func (c *conn) Write(b []byte) (int, error) {
 		print(" ")
 		println(string(b[:]))
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(str)}
 		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: 0}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -263,7 +267,8 @@ func (c *conn) Close() error {
 		print(" ")
 		println(c.fd.raddr.String())
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_CLOSE, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo1}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_CLOSE, syscallInfo)
@@ -309,8 +314,10 @@ func (c *conn) SetDeadline(t time.Time) error {
 		print(" ")
 		println(t.String())
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
-		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
+		argInfo2 := dara.GeneralType{Type: dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETDEADLINE, syscallInfo)
@@ -335,8 +342,10 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 		print(" ")
 		println(t.String())
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
-		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
+		argInfo2 := dara.GeneralType{Type: dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETREADDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETREADDEADLINE, syscallInfo)
@@ -361,8 +370,10 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 		print(" ")
 		println(t.String())
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
-		argInfo2 := dara.GeneralType{Type: dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
+		argInfo2 := dara.GeneralType{Type: dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETWRITEDEADLINE, 1, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_NET_SETWRITEDEADLINE, syscallInfo)
@@ -386,7 +397,8 @@ func (c *conn) SetReadBuffer(bytes int) error {
 		print(" ")
 		println(bytes)
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: bytes}
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETREADBUFFER, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}
@@ -411,7 +423,8 @@ func (c *conn) SetWriteBuffer(bytes int) error {
 		print(" ")
 		println(bytes)
 		str := c.fd.laddr.String() + c.fd.raddr.String()
-		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, String: str, Integer: len(str)}
+		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
+        copy(argInfo1.String[:], str)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: bytes}
 		retInfo1 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_NET_SETWRITEBUFFER, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1}}

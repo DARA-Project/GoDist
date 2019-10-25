@@ -26,8 +26,9 @@ func Readlink(name string) (string, error) {
 			if runtime.Is_dara_profiling_on() {
 				print("[READLINK] : ")
 				println(name)
-				argInfo := dara.GeneralType{Type: dara.STRING, String: name}
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: ""}
+				argInfo := dara.GeneralType{Type: dara.STRING}
+                copy(argInfo.String[:], name)
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_READLINK, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_READLINK, syscallInfo)
@@ -39,8 +40,10 @@ func Readlink(name string) (string, error) {
 			if runtime.Is_dara_profiling_on() {
 				print("[READLINK] : ")
 				println(name)
-				argInfo := dara.GeneralType{Type: dara.STRING, String: name}
-				retInfo1 := dara.GeneralType{Type: dara.STRING, String: string(b[0:n])}
+				argInfo := dara.GeneralType{Type: dara.STRING}
+                copy(argInfo.String[:], name)
+				retInfo1 := dara.GeneralType{Type: dara.STRING}
+                copy(retInfo1.String[:], b[0:n])
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_READLINK, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
 				runtime.Report_Syscall_To_Scheduler(dara.DSYS_READLINK, syscallInfo)
@@ -74,7 +77,8 @@ func chmod(name string, mode FileMode) error {
 		print(name)
 		print(" ")
 		println(mode)
-		argInfo1 := dara.GeneralType{Type: dara.STRING, String : name}
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_CHMOD, 1, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
@@ -94,7 +98,8 @@ func (f *File) chmod(mode FileMode) error {
 		print(f.file.name)
 		print(" ")
 		println(mode)
-		argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_FCHMOD, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
@@ -124,7 +129,8 @@ func Chown(name string, uid, gid int) error {
 		print(uid)
 		print(" ")
 		println(gid)
-		argInfo1 := dara.GeneralType{Type: dara.STRING, String: name}
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
 		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -152,7 +158,8 @@ func Lchown(name string, uid, gid int) error {
 		print(uid)
 		print(" ")
 		println(gid)
-		argInfo1 := dara.GeneralType{Type: dara.STRING, String: name}
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
 		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -179,7 +186,8 @@ func (f *File) Chown(uid, gid int) error {
 		print(uid)
 		print(" ")
 		println(gid)
-		argInfo1 := dara.GeneralType{Type: dara.STRING, String: f.name}
+		argInfo1 := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
 		argInfo3 := dara.GeneralType{Type: dara.INTEGER, Integer: int(gid)}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -205,7 +213,8 @@ func (f *File) Truncate(size int64) error {
 		print(f.file.name)
 		print(" ")
 		print(size)
-		argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: size}
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_FTRUNCATE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
@@ -228,7 +237,8 @@ func (f *File) Sync() error {
 	if runtime.Is_dara_profiling_on() {
 		print("[FSYNC] : ")
 		println(f.file.name)
-		argInfo1 := dara.GeneralType{Type: dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type: dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_FSYNC, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FSYNC, syscallInfo)
@@ -257,9 +267,12 @@ func Chtimes(name string, atime time.Time, mtime time.Time) error {
 		print(atime.String())
 		print(" ")
 		println(mtime.String())
-		argInfo1 := dara.GeneralType{Type:dara.STRING, String: name}
-		argInfo2 := dara.GeneralType{Type:dara.TIME, String: atime.String()}
-		argInfo3 := dara.GeneralType{Type:dara.TIME, String: mtime.String()}
+		argInfo1 := dara.GeneralType{Type:dara.STRING}
+        copy(argInfo1.String[:], name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], atime.String())
+		argInfo3 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo3.String[:], mtime.String())
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_UTIMES, 3, 1, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_UTIMES, syscallInfo)
@@ -281,7 +294,8 @@ func (f *File) Chdir() error {
 	if runtime.Is_dara_profiling_on() {
 		print("[FCHDIR] : ")
 		println(f.file.name)
-		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_FCHDIR, 1, 1, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_FCHDIR, syscallInfo)
@@ -303,8 +317,10 @@ func (f *File) setDeadline(t time.Time) error {
 		print(f.file.name)
 		print(" ")
 		print(t.String())
-		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
-		argInfo2 := dara.GeneralType{Type:dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETDEADLINE, syscallInfo)
@@ -323,8 +339,10 @@ func (f *File) setReadDeadline(t time.Time) error {
 		print(f.file.name)
 		print(" ")
 		print(t.String())
-		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
-		argInfo2 := dara.GeneralType{Type:dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETREADDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETREADDEADLINE, syscallInfo)
@@ -343,8 +361,10 @@ func (f *File) setWriteDeadline(t time.Time) error {
 		print(f.file.name)
 		print(" ")
 		print(t.String())
-		argInfo1 := dara.GeneralType{Type:dara.FILE, String: f.name}
-		argInfo2 := dara.GeneralType{Type:dara.TIME, String: t.String()}
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.TIME}
+        copy(argInfo2.String[:], t.String())
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_SETWRITEDEADLINE, 2, 1, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_SETWRITEDEADLINE, syscallInfo)

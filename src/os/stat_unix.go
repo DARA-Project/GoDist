@@ -19,7 +19,8 @@ func (f *File) Stat() (FileInfo, error) {
 	if runtime.Is_dara_profiling_on() {
 		print("[FSTAT] : ")
 		println(f.file.name)
-		argInfo := dara.GeneralType{Type: dara.STRING, String: f.name}
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], f.name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_FSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -43,7 +44,8 @@ func statNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[STAT] : " + name)
-		argInfo := dara.GeneralType{Type: dara.STRING, String: name}
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_STAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -63,7 +65,8 @@ func lstatNolog(name string) (FileInfo, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
 		println("[LSTAT] : " + name)
-		argInfo := dara.GeneralType{Type: dara.STRING, String: name}
+		argInfo := dara.GeneralType{Type: dara.STRING}
+        copy(argInfo.String[:], name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_LSTAT, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
