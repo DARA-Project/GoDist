@@ -36,10 +36,12 @@ func rename(oldname, newname string) error {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[RENAME] : ")
-		print(oldname)
-		print(" ")
-		println(newname)
+        runtime.Dara_Debug_Print(func() {
+		    print("[RENAME] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], oldname)
 		argInfo2 := dara.GeneralType{Type: dara.STRING}
@@ -179,11 +181,13 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[OPEN] : ")
-		print(name + " ")
-		print(flag)
-		print(" ")
-		println(perm)
+        runtime.Dara_Debug_Print(func() {
+		    print("[OPEN] : ")
+		    print(name + " ")
+		    print(flag)
+		    print(" ")
+		    println(perm)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: flag}
@@ -240,8 +244,10 @@ func (file *file) close() error {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[CLOSE] : ")
-		println(file.name)
+        runtime.Dara_Debug_Print(func() {
+		    print("[CLOSE] : ")
+		    println(file.name)
+        })
 		argInfo := dara.GeneralType{Type: dara.FILE}
         copy(argInfo.String[:], file.name)
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -268,8 +274,10 @@ func (f *File) read(b []byte) (n int, err error) {
 	runtime.KeepAlive(f)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[READ] : ")
-		println(f.file.name)
+        runtime.Dara_Debug_Print(func() {
+		    print("[READ] : ")
+		    println(f.file.name)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
@@ -289,10 +297,12 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 	runtime.KeepAlive(f)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[PREAD] : ")
-		print(f.file.name)
-		print(" ")
-		println(off)
+        runtime.Dara_Debug_Print(func() {
+		    print("[PREAD] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(off)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
@@ -312,10 +322,12 @@ func (f *File) write(b []byte) (n int, err error) {
 	runtime.KeepAlive(f)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[WRITE] : ")
-		print(f.file.name)
-		print(" ")
-		println(string(b[:len(b)]))
+        runtime.Dara_Debug_Print(func() {
+		    print("[WRITE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(string(b[:len(b)]))
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
@@ -332,12 +344,14 @@ func (f *File) write(b []byte) (n int, err error) {
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
     // DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[PWRITE] : ")
-		print(f.file.name)
-		print(" ")
-		print(string(b[:len(b)]))
-		print(" ")
-		print(off)
+        runtime.Dara_Debug_Print(func() {
+		    print("[PWRITE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(string(b[:len(b)]))
+		    print(" ")
+		    println(off)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
@@ -361,12 +375,14 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 	runtime.KeepAlive(f)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[SEEK] : ")
-		print(f.file.name)
-		print(" ")
-		print(offset)
-		print(" ")
-		println(whence)
+        runtime.Dara_Debug_Print(func() {
+		    print("[SEEK] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(offset)
+		    print(" ")
+		    println(whence)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: offset}
@@ -385,10 +401,12 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 func Truncate(name string, size int64) error {
     // DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[TRUNCATE] : ")
-		print(name)
-		print(" ")
-		println(size)
+        runtime.Dara_Debug_Print(func() {
+		    print("[TRUNCATE] : ")
+		    print(name)
+		    print(" ")
+		    println(size)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: size}
@@ -451,10 +469,12 @@ func Link(oldname, newname string) error {
 	e := syscall.Link(oldname, newname)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[LINK] : ")
-		print(oldname)
-		print(" ")
-		println(newname)
+        runtime.Dara_Debug_Print(func() {
+		    print("[LINK] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], oldname)
 		argInfo2 := dara.GeneralType{Type: dara.STRING}
@@ -475,10 +495,12 @@ func Symlink(oldname, newname string) error {
 	e := syscall.Symlink(oldname, newname)
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[LINK] : ")
-		print(oldname)
-		print(" ")
-		println(newname)
+        runtime.Dara_Debug_Print(func() {
+		    print("[LINK] : ")
+		    print(oldname)
+		    print(" ")
+		    println(newname)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], oldname)
 		argInfo2 := dara.GeneralType{Type: dara.STRING}

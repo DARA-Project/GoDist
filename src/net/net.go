@@ -175,10 +175,12 @@ func (c *conn) Read(b []byte) (int, error) {
 	if !c.ok() {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			print("[NET.READ] : ")
-			print(c.fd.laddr.String())
-			print(" ")
-			println(c.fd.raddr.String())
+            runtime.Dara_Debug_Print(func() {
+			    print("[NET.READ] : ")
+			    print(c.fd.laddr.String())
+			    print(" ")
+			    println(c.fd.raddr.String())
+            })
 			str := c.fd.laddr.String() + c.fd.raddr.String()
 			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
             copy(argInfo1.String[:], str)
@@ -196,10 +198,12 @@ func (c *conn) Read(b []byte) (int, error) {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.READ] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		println(c.fd.raddr.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.READ] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    println(c.fd.raddr.String())
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -217,12 +221,14 @@ func (c *conn) Write(b []byte) (int, error) {
 	if !c.ok() {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			print("[NET.WRITE] : ")
-			print(c.fd.laddr.String())
-			print(" ")
-			print(c.fd.raddr.String())
-			print(" ")
-			println(string(b[:]))
+            runtime.Dara_Debug_Print(func() {
+			    print("[NET.WRITE] : ")
+			    print(c.fd.laddr.String())
+			    print(" ")
+			    print(c.fd.raddr.String())
+			    print(" ")
+			    println(string(b[:]))
+            })
 			str := c.fd.laddr.String() + c.fd.raddr.String()
 			argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
             copy(argInfo1.String[:], str)
@@ -240,12 +246,14 @@ func (c *conn) Write(b []byte) (int, error) {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.WRITE] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(string(b[:]))
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.WRITE] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(string(b[:]))
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -262,10 +270,12 @@ func (c *conn) Write(b []byte) (int, error) {
 func (c *conn) Close() error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.CLOSE] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		println(c.fd.raddr.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.CLOSE] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    println(c.fd.raddr.String())
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -307,12 +317,14 @@ func (c *conn) RemoteAddr() Addr {
 func (c *conn) SetDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.SETDEADLINE] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.SETDEADLINE] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(t.String())
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -335,12 +347,14 @@ func (c *conn) SetDeadline(t time.Time) error {
 func (c *conn) SetReadDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.SETREADDEADLINE] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.SETREADDEADLINE] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(t.String())
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -363,12 +377,14 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 func (c *conn) SetWriteDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.SETWRITEDEADLINE] : ")
-		print(c.fd.laddr.String())
-		print(" ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.SETWRITEDEADLINE] : ")
+		    print(c.fd.laddr.String())
+		    print(" ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(t.String())
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -392,10 +408,12 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 func (c *conn) SetReadBuffer(bytes int) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.SETREADBUFFER] : ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(bytes)
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.SETREADBUFFER] : ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(bytes)
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)
@@ -418,10 +436,12 @@ func (c *conn) SetReadBuffer(bytes int) error {
 func (c *conn) SetWriteBuffer(bytes int) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[NET.SETWRITEBUFFER] : ")
-		print(c.fd.raddr.String())
-		print(" ")
-		println(bytes)
+        runtime.Dara_Debug_Print(func() {
+		    print("[NET.SETWRITEBUFFER] : ")
+		    print(c.fd.raddr.String())
+		    print(" ")
+		    println(bytes)
+        })
 		str := c.fd.laddr.String() + c.fd.raddr.String()
 		argInfo1 := dara.GeneralType{Type: dara.CONNECTION, Integer: len(str)}
         copy(argInfo1.String[:], str)

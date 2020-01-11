@@ -157,7 +157,7 @@ func (ln *TCPListener) file() (*os.File, error) {
 func listenTCP(ctx context.Context, network string, laddr *TCPAddr) (*TCPListener, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[LISTEN TCP]")
+		runtime.Dara_Debug_Print(func() { println("[LISTEN TCP]") })
 		argInfo1 := dara.GeneralType{Type: dara.CONTEXT, Unsupported: dara.UNSUPPORTEDVAL}
 		argInfo2 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo2.String[:], network)

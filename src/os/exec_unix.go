@@ -40,8 +40,10 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 	if e != nil {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			print("[WAIT] : ")
-			println(p.Pid)
+            runtime.Dara_Debug_Print(func() {
+			    print("[WAIT] : ")
+			    println(p.Pid)
+            })
 			argInfo := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
 			retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -60,8 +62,10 @@ func (p *Process) wait() (ps *ProcessState, err error) {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[WAIT] : ")
-		println(p.Pid)
+        runtime.Dara_Debug_Print(func() {
+		    print("[WAIT] : ")
+		    println(p.Pid)
+        })
 		argInfo := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
 		retInfo1 := dara.GeneralType{Type: dara.POINTER, Unsupported: dara.UNSUPPORTEDVAL}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -91,10 +95,12 @@ func (p *Process) signal(sig Signal) error {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[KILL] : ")
-		print(p.Pid)
-		print(" ")
-		println(s.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[KILL] : ")
+		    print(p.Pid)
+		    print(" ")
+		    println(s.String())
+        })
 		argInfo1 := dara.GeneralType{Type: dara.PROCESS, Integer: p.Pid}
 		argInfo2 := dara.GeneralType{Type: dara.SIGNAL}
         copy(argInfo2.String[:], s.String())

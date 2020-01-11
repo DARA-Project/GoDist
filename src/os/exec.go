@@ -73,7 +73,7 @@ func Getpid() int {
 	i := syscall.Getpid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETPID]")
+		runtime.Dara_Debug_Print(func() { println("[GETPID]") })
 		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPID, syscallInfo)
@@ -86,7 +86,7 @@ func Getppid() int {
 	i := syscall.Getppid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETPPID]")
+		runtime.Dara_Debug_Print(func() { println("[GETPPID]") })
 		retInfo := dara.GeneralType{Type : dara.INTEGER, Integer : i}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPPID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPPID, syscallInfo)

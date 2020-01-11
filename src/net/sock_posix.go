@@ -43,7 +43,7 @@ type sockaddr interface {
 func socket(ctx context.Context, net string, family, sotype, proto int, ipv6only bool, laddr, raddr sockaddr) (fd *netFD, err error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[SOCKET]")
+		runtime.Dara_Debug_Print(func() { println("[SOCKET]") })
 		argInfo1 := dara.GeneralType{Type: dara.CONTEXT, Unsupported: dara.UNSUPPORTEDVAL}
 		argInfo2 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo2.String[:], net)

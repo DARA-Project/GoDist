@@ -24,6 +24,10 @@ func Report_Syscall_To_Scheduler(syscallID int, syscallInfo dara.GeneralSyscall)
 	LogSyscall(syscallInfo)
 }
 
+func Dara_Debug_Print(pfunc func()) {
+    dprint(dara.DEBUG,pfunc)
+}
+
 func dara_Stack() []byte {
 	buf := make([]byte, 1024)
 	for {

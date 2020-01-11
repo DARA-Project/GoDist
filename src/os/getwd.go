@@ -29,7 +29,7 @@ func Getwd() (dir string, err error) {
 		dir, err = syscall.Getwd()
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			println("[GETWD]")
+			runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 			retInfo1 := dara.GeneralType{Type: dara.STRING}
             copy(retInfo1.String[:], dir)
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -45,7 +45,7 @@ func Getwd() (dir string, err error) {
 	if err != nil {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			println("[GETWD]")
+			runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 			retInfo1 := dara.GeneralType{Type: dara.STRING}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -59,7 +59,7 @@ func Getwd() (dir string, err error) {
 		if err == nil && SameFile(dot, d) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
                 copy(retInfo1.String[:], dir)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -77,7 +77,7 @@ func Getwd() (dir string, err error) {
 		if useSyscallwd(e) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
                 copy(retInfo1.String[:], s)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -97,7 +97,7 @@ func Getwd() (dir string, err error) {
 		if err == nil && SameFile(dot, d) {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
                 copy(retInfo1.String[:], dir)
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -115,7 +115,7 @@ func Getwd() (dir string, err error) {
 		// Can't stat root - no hope.
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			println("[GETWD]")
+			runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 			retInfo1 := dara.GeneralType{Type: dara.STRING}
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -126,7 +126,7 @@ func Getwd() (dir string, err error) {
 	if SameFile(root, dot) {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			println("[GETWD]")
+			runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 			retInfo1 := dara.GeneralType{Type: dara.STRING}
             copy(retInfo1.String[:], "/")
 			retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -144,7 +144,7 @@ func Getwd() (dir string, err error) {
 		if len(parent) >= 1024 { // Sanity check
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -156,7 +156,7 @@ func Getwd() (dir string, err error) {
 		if err != nil {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -171,7 +171,7 @@ func Getwd() (dir string, err error) {
 				fd.Close()
 				// DARA Instrumentation
 				if runtime.Is_dara_profiling_on() {
-					println("[GETWD]")
+					runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 					retInfo1 := dara.GeneralType{Type: dara.STRING}
 					retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 					syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -193,7 +193,7 @@ func Getwd() (dir string, err error) {
 		if err != nil {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				println("[GETWD]")
+				runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
 				retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 				syscallInfo := dara.GeneralSyscall{dara.DSYS_GETWD, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -216,7 +216,7 @@ func Getwd() (dir string, err error) {
 
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETWD]")
+		runtime.Dara_Debug_Print(func() { println("[GETWD]") })
 		retInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(retInfo1.String[:], dir)
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}

@@ -33,10 +33,12 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		}
 		if lerr != nil {
 			if runtime.Is_dara_profiling_on() {
-				print("[Readdir] : ")
-				print(f.file.name)
-				print(" ")
-				println(n)
+                runtime.Dara_Debug_Print(func() {
+				    print("[Readdir] : ")
+				    print(f.file.name)
+				    print(" ")
+				    println(n)
+                })
 				argInfo1 := dara.GeneralType{Type:dara.FILE}
                 copy(argInfo1.String[:], f.name)
 				argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
@@ -56,10 +58,12 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[Readdir] : ")
-		print(f.file.name)
-		print(" ")
-		println(n)
+        runtime.Dara_Debug_Print(func() {
+		    print("[Readdir] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(n)
+        })
 		argInfo1 := dara.GeneralType{Type:dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
@@ -96,10 +100,12 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 			runtime.KeepAlive(f)
 			if errno != nil {
 				if runtime.Is_dara_profiling_on() {
-					print("[Readdirnames] : ")
-					print(f.file.name)
-					print(" ")
-					println(n)
+                    runtime.Dara_Debug_Print(func() {
+					    print("[Readdirnames] : ")
+					    print(f.file.name)
+					    print(" ")
+					    println(n)
+                    })
 					argInfo1 := dara.GeneralType{Type: dara.FILE}
                     copy(argInfo1.String[:], f.name)
 					argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
@@ -123,10 +129,12 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 	}
 	if n >= 0 && len(names) == 0 {
 		if runtime.Is_dara_profiling_on() {
-			print("[Readdirnames] : ")
-			print(f.file.name)
-			print(" ")
-			println(n)
+            runtime.Dara_Debug_Print(func() {
+			    print("[Readdirnames] : ")
+			    print(f.file.name)
+			    print(" ")
+			    println(n)
+            })
 			argInfo1 := dara.GeneralType{Type: dara.FILE}
             copy(argInfo1.String[:], f.name)
 			argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}
@@ -139,10 +147,12 @@ func (f *File) readdirnames(n int) (names []string, err error) {
 	}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[Readdirnames] : ")
-		print(f.file.name)
-		print(" ")
-		println(n)
+        runtime.Dara_Debug_Print(func() {
+		    print("[Readdirnames] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(n)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer:n}

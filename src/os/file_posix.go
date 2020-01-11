@@ -24,8 +24,10 @@ func Readlink(name string) (string, error) {
 		if e != nil {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				print("[READLINK] : ")
-				println(name)
+                runtime.Dara_Debug_Print(func() {
+				    print("[READLINK] : ")
+				    println(name)
+                })
 				argInfo := dara.GeneralType{Type: dara.STRING}
                 copy(argInfo.String[:], name)
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
@@ -38,8 +40,10 @@ func Readlink(name string) (string, error) {
 		if n < len {
 			// DARA Instrumentation
 			if runtime.Is_dara_profiling_on() {
-				print("[READLINK] : ")
-				println(name)
+                runtime.Dara_Debug_Print(func() {
+				    print("[READLINK] : ")
+				    println(name)
+                })
 				argInfo := dara.GeneralType{Type: dara.STRING}
                 copy(argInfo.String[:], name)
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
@@ -73,10 +77,12 @@ func syscallMode(i FileMode) (o uint32) {
 func chmod(name string, mode FileMode) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[CHMOD] : ")
-		print(name)
-		print(" ")
-		println(mode)
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHMOD] : ")
+		    print(name)
+		    print(" ")
+		    println(mode)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
@@ -94,10 +100,12 @@ func chmod(name string, mode FileMode) error {
 func (f *File) chmod(mode FileMode) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FCHMOD] : ")
-		print(f.file.name)
-		print(" ")
-		println(mode)
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHMOD] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(mode)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(mode)}
@@ -123,12 +131,14 @@ func (f *File) chmod(mode FileMode) error {
 func Chown(name string, uid, gid int) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[CHOWN] : ")
-		print(name)
-		print(" ")
-		print(uid)
-		print(" ")
-		println(gid)
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHOWN] : ")
+		    print(name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
@@ -152,12 +162,14 @@ func Chown(name string, uid, gid int) error {
 func Lchown(name string, uid, gid int) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[LCHOWN] : ")
-		print(name)
-		print(" ")
-		print(uid)
-		print(" ")
-		println(gid)
+        runtime.Dara_Debug_Print(func() {
+		    print("[LCHOWN] : ")
+		    print(name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
@@ -180,12 +192,14 @@ func Lchown(name string, uid, gid int) error {
 func (f *File) Chown(uid, gid int) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FCHOWN] : ")
-		print(f.file.name)
-		print(" ")
-		print(uid)
-		print(" ")
-		println(gid)
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHOWN] : ")
+		    print(f.file.name)
+		    print(" ")
+		    print(uid)
+		    print(" ")
+		    println(gid)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer: int(uid)}
@@ -209,10 +223,12 @@ func (f *File) Chown(uid, gid int) error {
 func (f *File) Truncate(size int64) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FTRUNCATE] : ")
-		print(f.file.name)
-		print(" ")
-		print(size)
+        runtime.Dara_Debug_Print(func() {
+		    print("[FTRUNCATE] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(size)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: size}
@@ -235,8 +251,10 @@ func (f *File) Truncate(size int64) error {
 func (f *File) Sync() error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FSYNC] : ")
-		println(f.file.name)
+        runtime.Dara_Debug_Print(func() {
+		    print("[FSYNC] : ")
+		    println(f.file.name)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(argInfo1.String[:], f.name)
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -261,12 +279,14 @@ func (f *File) Sync() error {
 func Chtimes(name string, atime time.Time, mtime time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[UTIMES] : ")
-		print(name)
-		print(" ")
-		print(atime.String())
-		print(" ")
-		println(mtime.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[UTIMES] : ")
+		    print(name)
+		    print(" ")
+		    print(atime.String())
+		    print(" ")
+		    println(mtime.String())
+        })
 		argInfo1 := dara.GeneralType{Type:dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type:dara.TIME}
@@ -292,8 +312,10 @@ func Chtimes(name string, atime time.Time, mtime time.Time) error {
 func (f *File) Chdir() error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FCHDIR] : ")
-		println(f.file.name)
+        runtime.Dara_Debug_Print(func() {
+		    print("[FCHDIR] : ")
+		    println(f.file.name)
+        })
 		argInfo1 := dara.GeneralType{Type:dara.FILE}
         copy(argInfo1.String[:], f.name)
 		retInfo := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
@@ -313,10 +335,12 @@ func (f *File) Chdir() error {
 func (f *File) setDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[SetDeadline] : ")
-		print(f.file.name)
-		print(" ")
-		print(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
 		argInfo1 := dara.GeneralType{Type:dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type:dara.TIME}
@@ -335,10 +359,12 @@ func (f *File) setDeadline(t time.Time) error {
 func (f *File) setReadDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[SetReadDeadline] : ")
-		print(f.file.name)
-		print(" ")
-		print(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetReadDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
 		argInfo1 := dara.GeneralType{Type:dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type:dara.TIME}
@@ -357,10 +383,12 @@ func (f *File) setReadDeadline(t time.Time) error {
 func (f *File) setWriteDeadline(t time.Time) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[SetWriteDeadline] : ")
-		print(f.file.name)
-		print(" ")
-		print(t.String())
+        runtime.Dara_Debug_Print(func() {
+		    print("[SetWriteDeadline] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(t.String())
+        })
 		argInfo1 := dara.GeneralType{Type:dara.FILE}
         copy(argInfo1.String[:], f.name)
 		argInfo2 := dara.GeneralType{Type:dara.TIME}

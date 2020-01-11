@@ -69,7 +69,7 @@ func Unsetenv(key string) error {
 	unsetenv_c(key)
 	// DARA Instrumentation
 	if (runtime.Is_dara_profiling_on()) {
-		println("[UNSETENV] : " + key)
+		runtime.Dara_Debug_Print(func() { println("[UNSETENV] : " + key) })
 		argInfo := dara.GeneralType{Type: dara.STRING}
         copy(argInfo.String[:], key)
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported : dara.UNSUPPORTEDVAL}
@@ -94,7 +94,7 @@ func Getenv(key string) (value string, found bool) {
 	if !ok {
 		// DARA Instrumentation
 		if (runtime.Is_dara_profiling_on()) {
-			println("[GETENV] : " + key)
+			runtime.Dara_Debug_Print(func() { println("[GETENV] : " + key) })
 			retInfo1 := dara.GeneralType{Type: dara.STRING}
 			retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -107,7 +107,7 @@ func Getenv(key string) (value string, found bool) {
 		if s[i] == '=' {
 			// DARA Instrumentation
 			if (runtime.Is_dara_profiling_on()) {
-				println("[GETENV] : " + key)
+				runtime.Dara_Debug_Print(func() {println("[GETENV] : " + key)})
 				retInfo1 := dara.GeneralType{Type: dara.STRING}
                 copy(retInfo1.String[:], s[i+1:])
 				retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
@@ -119,7 +119,7 @@ func Getenv(key string) (value string, found bool) {
 	}
 	// DARA Instrumentation
 	if (runtime.Is_dara_profiling_on()) {
-		println("[GETENV] : " + key)
+		runtime.Dara_Debug_Print(func() { println("[GETENV] : " + key) })
 		retInfo1 := dara.GeneralType{Type: dara.STRING}
 		retInfo2 := dara.GeneralType{Type: dara.BOOL, Bool:false}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETENV, 1, 2, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -131,7 +131,7 @@ func Getenv(key string) (value string, found bool) {
 func Setenv(key, value string) error {
 	// DARA Instrumentation
 	if (runtime.Is_dara_profiling_on()) {
-		println("[SETENV] : " + key +  " "  + value)
+		runtime.Dara_Debug_Print(func() { println("[SETENV] : " + key +  " "  + value) })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], key)
 		argInfo2 := dara.GeneralType{Type: dara.STRING}
@@ -184,7 +184,7 @@ func Clearenv() {
 	envs = []string{}
 	// DARA Instrumentation
 	if (runtime.Is_dara_profiling_on()) {
-		println("[CLEARENV]")
+		runtime.Dara_Debug_Print(func() { println("[CLEARENV]") })
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_CLEARENV, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_CLEARENV, syscallInfo)
 	}
@@ -202,7 +202,7 @@ func Environ() []string {
 	}
 	// DARA Instrumentation
 	if (runtime.Is_dara_profiling_on()) {
-		println("[ENVIRON]")
+		runtime.Dara_Debug_Print(func() { println("[ENVIRON]") })
 		retInfo := dara.GeneralType{Type: dara.ARRAY, Integer: len(a)}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_ENVIRON, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_ENVIRON, syscallInfo)

@@ -1049,7 +1049,7 @@ func Now() Time {
 		t := Time{uint64(nsec), sec + minWall, Local}
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
-			println("[TIME.NOW]")
+            runtime.Dara_Debug_Print(func() { println("[TIME.NOW]") })
 			retInfo := dara.GeneralType{Type : dara.TIME}
             copy(retInfo.String[:], t.String())
 			syscallInfo := dara.GeneralSyscall{dara.DSYS_TIMENOW, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
@@ -1060,7 +1060,7 @@ func Now() Time {
 	t := Time{hasMonotonic | uint64(sec)<<nsecShift | uint64(nsec), mono, Local}
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[TIME.NOW]")
+        runtime.Dara_Debug_Print(func() { println("[TIME.NOW]") })
 		retInfo := dara.GeneralType{Type : dara.TIME}
         copy(retInfo.String[:], t.String())
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_TIMENOW, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}

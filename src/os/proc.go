@@ -32,7 +32,7 @@ func Getuid() int {
 	id := syscall.Getuid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETUID]")
+		runtime.Dara_Debug_Print(func() { println("[GETUID]") })
 		retInfo := dara.GeneralType{Type:dara.INTEGER, Integer: id}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETUID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETUID, syscallInfo)
@@ -47,7 +47,7 @@ func Geteuid() int {
 	id := syscall.Geteuid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETEUID]")
+		runtime.Dara_Debug_Print(func() { println("[GETEUID]") })
 		retInfo := dara.GeneralType{Type:dara.INTEGER, Integer: id}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETEUID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETEUID, syscallInfo)
@@ -62,7 +62,7 @@ func Getgid() int {
 	id := syscall.Getgid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETGID]")
+		runtime.Dara_Debug_Print(func() { println("[GETGID]") })
 		retInfo := dara.GeneralType{Type:dara.INTEGER, Integer: id}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETGID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETGID, syscallInfo)
@@ -77,7 +77,7 @@ func Getegid() int {
 	id := syscall.Getegid()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETEGID]")
+		runtime.Dara_Debug_Print(func() { println("[GETEGID]") })
 		retInfo := dara.GeneralType{Type:dara.INTEGER, Integer: id}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETEGID, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETEGID, syscallInfo)
@@ -93,7 +93,7 @@ func Getgroups() ([]int, error) {
 	gids, e := syscall.Getgroups()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[GETGROUPS]")
+		runtime.Dara_Debug_Print(func() { println("[GETGROUPS]") })
 		retInfo1 := dara.GeneralType{Type: dara.ARRAY, Integer: len(gids)}
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETGROUPS, 0, 2, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo1, retInfo2}}
@@ -107,8 +107,10 @@ func Getgroups() ([]int, error) {
 // The program terminates immediately; deferred functions are not run.
 func Exit(code int) {
 	if runtime.Is_dara_profiling_on() {
-		print("[EXIT] : ")
-		println(code)
+        runtime.Dara_Debug_Print(func() {
+		    print("[EXIT] : ")
+		    println(code)
+        })
 		argInfo := dara.GeneralType{Type: dara.INTEGER, Integer: code}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_EXIT, 1, 0, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_EXIT, syscallInfo)

@@ -26,7 +26,7 @@ func Executable() (string, error) {
 	str, err := executable()
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[EXECUTABLE]")
+		runtime.Dara_Debug_Print(func() { println("[EXECUTABLE]") })
 		retInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(retInfo1.String[:], str)
 		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}

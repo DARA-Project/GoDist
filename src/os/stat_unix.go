@@ -17,8 +17,10 @@ import (
 func (f *File) Stat() (FileInfo, error) {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[FSTAT] : ")
-		println(f.file.name)
+		runtime.Dara_Debug_Print(func() {
+            print("[FSTAT] : ")
+		    println(f.file.name)
+        })
 		argInfo := dara.GeneralType{Type: dara.STRING}
         copy(argInfo.String[:], f.name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
@@ -43,7 +45,7 @@ func statNolog(name string) (FileInfo, error) {
 	var fs fileStat
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[STAT] : " + name)
+		runtime.Dara_Debug_Print(func() { println("[STAT] : " + name) })
 		argInfo := dara.GeneralType{Type: dara.STRING}
         copy(argInfo.String[:], name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}
@@ -64,7 +66,7 @@ func lstatNolog(name string) (FileInfo, error) {
 	var fs fileStat
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[LSTAT] : " + name)
+		runtime.Dara_Debug_Print(func() { println("[LSTAT] : " + name) })
 		argInfo := dara.GeneralType{Type: dara.STRING}
         copy(argInfo.String[:], name)
 		retInfo1 := dara.GeneralType{Type: dara.FILEINFO, Unsupported: dara.UNSUPPORTEDVAL}

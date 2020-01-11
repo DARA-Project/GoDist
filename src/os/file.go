@@ -218,10 +218,12 @@ func Mkdir(name string, perm FileMode) error {
 
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[MKDIR] : ")
-		print(name)
-		print(" ")
-		println(perm)
+		runtime.Dara_Debug_Print(func() {
+            print("[MKDIR] : ")
+		    print(name)
+		    print(" ")
+		    println(perm)
+        })
 		argInfo1 := dara.GeneralType{Type: dara.STRING}
         copy(argInfo1.String[:], name)
 		argInfo2 := dara.GeneralType{Type: dara.INTEGER, Integer : int(perm)}
@@ -246,8 +248,10 @@ func Mkdir(name string, perm FileMode) error {
 func Chdir(dir string) error {
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		print("[CHDIR] : ")
-		println(dir)
+        runtime.Dara_Debug_Print(func() {
+		    print("[CHDIR] : ")
+		    println(dir)
+        })
 		argInfo := dara.GeneralType{Type: dara.STRING}
         copy(argInfo.String[:], dir)
 		retInfo := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}

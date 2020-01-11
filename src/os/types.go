@@ -17,7 +17,7 @@ func Getpagesize() int {
 	// DARA Instrumentation
 	// This doesn't actually trap into the OS. Provided by the runtime.
 	if runtime.Is_dara_profiling_on() {
-		println("[GETPAGESIZE]")
+		runtime.Dara_Debug_Print(func() { println("[GETPAGESIZE]") })
 		retInfo := dara.GeneralType{Type: dara.INTEGER, Integer: size}
 		syscallInfo := dara.GeneralSyscall{dara.DSYS_GETPAGESIZE, 0, 1, [10]dara.GeneralType{}, [10]dara.GeneralType{retInfo}}
 		runtime.Report_Syscall_To_Scheduler(dara.DSYS_GETPAGESIZE, syscallInfo)

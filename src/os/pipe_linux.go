@@ -14,7 +14,7 @@ func Pipe() (r *File, w *File, err error) {
 	var p [2]int
 	// DARA Instrumentation
 	if runtime.Is_dara_profiling_on() {
-		println("[PIPE]")
+		runtime.Dara_Debug_Print(func() { println("[PIPE]") })
 		retInfo1 := dara.GeneralType{Type: dara.FILE}
         copy(retInfo1.String[:], r.name)
 		retInfo2 := dara.GeneralType{Type: dara.FILE}
