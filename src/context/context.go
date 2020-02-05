@@ -326,8 +326,10 @@ type cancelCtx struct {
 
 func (c *cancelCtx) Done() <-chan struct{} {
     if runtime.Is_dara_profiling_on() {
-        print("[Ctx.Done] : ")
-        println(c)
+        runtime.Dara_Debug_Print(func() {
+            print("[Ctx.Done] : ")
+            println(c)
+        })
         syscallInfo := dara.GeneralSyscall{dara.CTX_DONE, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.CTX_DONE, syscallInfo)
     }
@@ -354,8 +356,10 @@ func (c *cancelCtx) String() string {
 // removeFromParent is true, removes c from its parent's children.
 func (c *cancelCtx) cancel(removeFromParent bool, err error) {
     if runtime.Is_dara_profiling_on() {
-        println("[Ctx.Cancel] : ")
-        print(c)
+        runtime.Dara_Debug_Print(func() {
+            print("[Ctx.Cancel] : ")
+            println(c)
+        })
         syscallInfo := dara.GeneralSyscall{dara.CTX_CANCEL, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.CTX_CANCEL, syscallInfo)
     }

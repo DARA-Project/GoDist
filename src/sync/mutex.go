@@ -78,8 +78,10 @@ func (m *Mutex) Lock() {
 			race.Acquire(unsafe.Pointer(m))
 		}
         if runtime.Is_dara_profiling_on() {
-            print("[Mutex.Lock] : ")
-            println(m)
+            runtime.Dara_Debug_Print(func() {
+                print("[Mutex.Lock] : ")
+                println(m)
+            })
 
             syscallInfo := dara.GeneralSyscall{dara.MUX_LOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
             runtime.Report_Syscall_To_Scheduler(dara.MUX_LOCK, syscallInfo)
@@ -175,8 +177,10 @@ func (m *Mutex) Lock() {
 	}
 
     if runtime.Is_dara_profiling_on() {
-        print("[Mutex.Lock] : ")
-        println(m)
+        runtime.Dara_Debug_Print(func() {
+            print("[Mutex.Lock] : ")
+            println(m)
+        })
 
         syscallInfo := dara.GeneralSyscall{dara.MUX_LOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.MUX_LOCK, syscallInfo)
@@ -211,8 +215,10 @@ func (m *Mutex) Unlock() {
 			// So get off the way.
 			if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken|mutexStarving) != 0 {
                 if runtime.Is_dara_profiling_on() {
-                    print("[Mutex.Unlock] : ")
-                    println(m)
+                    runtime.Dara_Debug_Print(func() {
+                        print("[Mutex.Unlock] : ")
+                        println(m)
+                    })
 
                     syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
                     runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
@@ -224,8 +230,10 @@ func (m *Mutex) Unlock() {
 			if atomic.CompareAndSwapInt32(&m.state, old, new) {
 				runtime_Semrelease(&m.sema, false)
                 if runtime.Is_dara_profiling_on() {
-                    print("[Mutex.Unlock] : ")
-                    println(m)
+                    runtime.Dara_Debug_Print(func() {
+                        print("[Mutex.Unlock] : ")
+                        println(m)
+                    })
 
                     syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
                     runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)
@@ -243,8 +251,10 @@ func (m *Mutex) Unlock() {
 	}
 
     if runtime.Is_dara_profiling_on() {
-        print("[Mutex.Unlock] : ")
-        print(m)
+        runtime.Dara_Debug_Print(func() {
+            print("[Mutex.Unlock] : ")
+            print(m)
+        })
 
         syscallInfo := dara.GeneralSyscall{dara.MUX_UNLOCK, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.MUX_UNLOCK, syscallInfo)

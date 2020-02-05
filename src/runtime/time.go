@@ -85,7 +85,7 @@ var faketime int64
 func timeSleep(ns int64) {
     //Dara injection
     if Is_dara_profiling_on() {
-        println("[SLEEP]", ns)
+        Dara_Debug_Print(func() { println("[SLEEP]", ns) })
         argInfo := dara.GeneralType{Type: dara.INTEGER64, Integer64: ns}
         syscallInfo := dara.GeneralSyscall{dara.DSYS_SLEEP, 1, 0, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{}}
         Report_Syscall_To_Scheduler(dara.DSYS_SLEEP, syscallInfo)

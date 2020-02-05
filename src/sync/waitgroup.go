@@ -53,9 +53,11 @@ func (wg *WaitGroup) state() *uint64 {
 // See the WaitGroup example.
 func (wg *WaitGroup) Add(delta int) {
     if runtime.Is_dara_profiling_on() {
-        print("[Wg.Add] : ")
-        print(wg)
-        println(delta)
+        runtime.Dara_Debug_Print(func() {
+            print("[Wg.Add] : ")
+            print(wg)
+            println(delta)
+        })
         argInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: delta}
         syscallInfo := dara.GeneralSyscall{dara.WG_ADD, 1, 0, [10]dara.GeneralType{argInfo1}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.WG_ADD, syscallInfo)
@@ -111,8 +113,10 @@ func (wg *WaitGroup) Done() {
 // Wait blocks until the WaitGroup counter is zero.
 func (wg *WaitGroup) Wait() {
     if runtime.Is_dara_profiling_on() {
-        print("[Wg.Wait] : ")
-        print(wg)
+        runtime.Dara_Debug_Print(func() {
+            print("[Wg.Wait] : ")
+            println(wg)
+        })
         syscallInfo := dara.GeneralSyscall{dara.WG_WAIT, 0, 0, [10]dara.GeneralType{}, [10]dara.GeneralType{}}
         runtime.Report_Syscall_To_Scheduler(dara.WG_WAIT, syscallInfo)
     }
