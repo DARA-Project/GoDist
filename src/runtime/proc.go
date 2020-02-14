@@ -2433,7 +2433,6 @@ stop:
 	}
 	pidleput(_p_)
 	unlock(&sched.lock)
-
 	// Delicate dance: thread transitions from spinning to non-spinning state,
 	// potentially concurrently with submission of new goroutines. We must
 	// drop nmspinning first and then check all per-P queues again (with
@@ -2455,6 +2454,7 @@ stop:
 		}
 	}
 
+    dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - checking all runqueues once again") })
 	// check all runqueues once again
 	for _, _p_ := range allpSnapshot {
 		if !runqempty(_p_) {
@@ -2493,6 +2493,7 @@ stop:
 		}
 	}
 
+    dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - before polling network") })
 	// poll network
 	if netpollinited() && atomic.Load(&netpollWaiters) > 0 && atomic.Xchg64(&sched.lastpoll, 0) != 0 {
 		if _g_.m.p != 0 {
@@ -2501,7 +2502,25 @@ stop:
 		if _g_.m.spinning {
 			throw("findrunnable: netpoll with spinning")
 		}
+        dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - Releasing lock before polling on network") })
+        if DaraInitialised {
+            // DARA Release lock to the global scheduler so that we can get network messages from other nodes
+            procchan[DPid].Run = -6
+	        atomic.Store(&(procchan[DPid].Lock),dara.UNLOCKED)
+            HasDaraLock = false
+        }
 		gp := netpoll(true) // block until new work is available
+        if DaraInitialised {
+            // Need to reacquire the lock before continuing
+            for {
+			    if atomic.Cas(&(procchan[DPid].SyscallLock), dara.UNLOCKED, dara.LOCKED) {
+                    // We got the lock, time to get out of this loop!
+                    procchan[DPid].Run = -3
+                    HasDaraLock = true
+                    break
+                }
+            }
+        }
 		atomic.Store64(&sched.lastpoll, uint64(nanotime()))
 		if gp != nil {
 			lock(&sched.lock)
