@@ -3007,6 +3007,8 @@ func initDara() {
 		DDebugLevel = dara.INFO
 	}
 
+    CoverageInfo = make(map[string]uint64)
+
 	mode := gogetenv("DARA_MODE")
 	switch mode {
 	case "replay":
@@ -3589,6 +3591,7 @@ var (
 	FastReplay      bool = false
 	DaraInitialised bool = false
 	HasDaraLock     bool = false
+    CoverageInfo    map[string]uint64
 )
 
 type Schedule struct {

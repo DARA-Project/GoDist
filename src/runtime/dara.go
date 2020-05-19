@@ -19,6 +19,18 @@ func Is_Dara_On() bool {
 	return true
 }
 
+func ReportBlockCoverage(blockID string) {
+    // Update counter for the block
+    if DaraInitialised {
+        if v, ok := CoverageInfo[blockID]; ok {
+            CoverageInfo[blockID] = v + 1
+        } else {
+            CoverageInfo[blockID] = uint64(1)
+        }
+        dprint(dara.DEBUG, func() {println("Reporting coverage for block:", blockID)} )
+    }
+}
+
 func Report_Syscall_To_Scheduler(syscallID int, syscallInfo dara.GeneralSyscall) {
 	//report_syscall(syscallID, syscallInfo) //TODO remove this it's redundent and slow
 	LogSyscall(syscallInfo)
