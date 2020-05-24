@@ -2499,6 +2499,7 @@ stop:
 		if DaraInitialised {
 			// DARA Release lock to the global scheduler so that we can get network messages from other nodes
 			procchan[DPid].Run = -6
+            LogCoverage()
 			atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
 			HasDaraLock = false
 		}
@@ -2780,6 +2781,19 @@ func LogEndEvent() {
 	dprint(dara.DEBUG, func() {
 		println("[GoRuntime]LogEndEvent : LogIndex after logging end event is", procchan[DPid].LogIndex)
 	})
+}
+
+func LogCoverage() {
+    var index int
+    for blockID, value := range CoverageInfo {
+        procchan[DPid].Coverage[index].Count = value
+        copy(procchan[DPid].Coverage[index].BlockID[:], blockID)
+        // Remove the key as we have the info stored
+        // We also don't want old info creeping into
+        // future reports....
+        index += 1
+        delete(CoverageInfo, blockID)
+    }
 }
 
 func LogSchedulingEvent(routine dara.RoutineInfo) {
@@ -3091,6 +3105,7 @@ func endDara() {
 	procchan[DPid].Run = -100
 	DaraInitialised = false
 	LogEndEvent()
+    LogCoverage()
 	HasDaraLock = false
 	dprint(dara.DEBUG, func() { println("[GoRuntime]endDara : Dara end sequence completed") })
 	atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
@@ -3152,6 +3167,7 @@ func getScheduledGp(gp *g) *g {
 			//Unlock
 			Running = false
 			dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Unlocking global lock on process ", DPid) })
+            LogCoverage()
 			atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED) //TODO unlock using scheduler api
 			HasDaraLock = false
 		} else {
@@ -3169,6 +3185,7 @@ func getScheduledGp(gp *g) *g {
 				//dprint(dara.INFO, func () {println("Obtained lock with Run value",procchan[DPid].Run)})
 				if procchan[DPid].Run >= 0 {
 					// Waiting for command from Global Scheduler. give up lock
+                    LogCoverage()
 					atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
 					HasDaraLock = false
 					continue
@@ -3199,12 +3216,14 @@ func getScheduledGp(gp *g) *g {
 					}
 
 					if procchan[DPid].Run == -4 {
+                        LogCoverage()
 						atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED)
 						dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Received ending message from Global Scheduler") })
 						HasDaraLock = false
 					}
 					//TODO does this ever get hit
 					if Record {
+                        LogCoverage()
 						atomic.Store(&(procchan[DPid].Lock), dara.UNLOCKED) //TODO unlock using scheduler api
 						HasDaraLock = false
 						continue

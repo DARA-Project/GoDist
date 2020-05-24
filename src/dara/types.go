@@ -83,6 +83,7 @@ type DaraProc struct {
 	Epoch int
 	LogIndex int
 	Log [MAXLOGENTRIES]EncEvent
+    Coverage [MAXBLOCKS]CovInfo
 }
 
 //RoutineInfo contains data specific to a single goroutine
@@ -148,6 +149,11 @@ type EncNameValuePair struct {
 	VarName [VARBUFLEN]byte
 	Value [VARBUFLEN]byte
 	Type [VARBUFLEN]byte
+}
+
+type CovInfo struct {
+    BlockID [BLOCKIDLEN]byte
+    Count uint64
 }
 
 type Event struct {
