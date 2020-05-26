@@ -83,6 +83,7 @@ type DaraProc struct {
 	Epoch int
 	LogIndex int
 	Log [MAXLOGENTRIES]EncEvent
+    CoverageIndex int
     Coverage [MAXBLOCKS]CovInfo
 }
 

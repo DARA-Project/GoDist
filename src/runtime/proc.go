@@ -2792,6 +2792,7 @@ func LogCoverage() {
         // We also don't want old info creeping into
         // future reports....
         index += 1
+        procchan[DPid].CoverageIndex += 1
         delete(CoverageInfo, blockID)
     }
 }
