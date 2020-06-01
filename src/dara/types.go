@@ -167,6 +167,13 @@ type Event struct {
 	Msg Message
 }
 
+type CoverageEvent struct {
+	CoverageInfo map[string]uint64
+	SnapshotCoverage float64
+	TotalCoverage float64
+	EventIndex int
+}
+
 type LogEntry struct {
 	LogID string
 	Vars []NameValuePair
@@ -208,6 +215,7 @@ func GetDaraProcStatus(status uint32) DaraProcStatus {
 }
 
 //Type which encapsulates a single schedule
-//TODO integerate with vaastav to build a single schedule for DPOR
-type Schedule []Event
-
+type Schedule struct {
+	LogEvents []Event
+	CovEvents []CoverageEvent
+}
