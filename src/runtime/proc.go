@@ -2495,7 +2495,7 @@ stop:
 		if _g_.m.spinning {
 			throw("findrunnable: netpoll with spinning")
 		}
-		dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - Releasing lock before polling on network") })
+		dprint(dara.INFO, func() { println("[GoRuntime]findrunnable (STOPPED) - Releasing lock before polling on network") })
 		if DaraInitialised {
 			// DARA Release lock to the global scheduler so that we can get network messages from other nodes
 			procchan[DPid].Run = -6
@@ -2506,11 +2506,18 @@ stop:
 		gp := netpoll(true) // block until new work is available
 		if DaraInitialised {
 			// Need to reacquire the lock before continuing
+			count := 0
 			for {
-				if atomic.Cas(&(procchan[DPid].SyscallLock), dara.UNLOCKED, dara.LOCKED) {
+				count += 1
+				if count <= 10 {
+					dprint(dara.INFO, func() {println("[GoRuntime] Reacquiring lock after netpoll")})
+					dprint(dara.INFO, func() {println("[GoRuntime] Run Value is", procchan[DPid].Run)})
+				}
+				if atomic.Cas(&(procchan[DPid].Lock), dara.UNLOCKED, dara.LOCKED) {
 					// We got the lock, time to get out of this loop!
-					procchan[DPid].Run = -3
+					dprint(dara.INFO, func() {println("[GoRuntime] Reacquired lock after netpoll")})
 					HasDaraLock = true
+					procchan[DPid].Run = -7
 					break
 				}
 			}
@@ -3134,7 +3141,7 @@ func getScheduledGp(gp *g) *g {
 			dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Value of run variable :", procchan[DPid].Run) })
 			// Possible BUG : Something is wrong with RunningGoid. Trace the value of this to make sense as to what the fuck is this
 			if procchan[DPid].Run == -3 {
-				dprint(dara.DEBUG, func() {
+				dprint(dara.INFO, func() {
 					println("[GoRuntime]getScheduledGp : Reporting Scheduling event with GoID", RunningGoid, origgp.goid)
 				})
 				//NOTE THIS IS BUG BUG BUG probable look here first if
@@ -3525,8 +3532,8 @@ func dprint(loglevel int, pfunc func()) {
 		throw("Fatal error")
 	}
 	if loglevel >= DDebugLevel {
+		print("[Process", DPid, "]")
 		pfunc()
-		//print(args...)
 	}
 }
 

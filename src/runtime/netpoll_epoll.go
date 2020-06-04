@@ -7,6 +7,7 @@
 package runtime
 
 import "unsafe"
+import "dara"
 
 func epollcreate(size int32) int32
 func epollcreate1(flags int32) int32
@@ -76,6 +77,7 @@ retry:
 		}
 		goto retry
 	}
+	dprint(dara.DEBUG, func(){println("[GoRuntime]netpoll wait time is", n)})
 	var gp guintptr
 	for i := int32(0); i < n; i++ {
 		ev := &events[i]
