@@ -214,6 +214,29 @@ func GetDaraProcStatus(status uint32) DaraProcStatus {
 	return DaraProcStatus(status)
 }
 
+
+// Status is used to control between Global and Local Schedulers
+type DaraNodeStatus int
+
+const (
+	// THe global scheduler has asked us the local scheduler
+	// to record events of interest and report them to the global scheduler
+	RECORD DaraNodeStatus = -3
+	INIT = -1
+	// The local scheduler has finished its execution
+	FINISH = -100
+	// The global scheduler has told the local scheduler to kill its execution.
+	KILL = -4
+	// The local scheduler needs to do polling on the net. It can't do anything else for now :/
+	NET_BLOCK = -6
+	// The local scheduler has woken up from a network block. This value notifies
+	// the global scheduler that it wants the lock back
+	NET_WAKEUP = -7
+	// The global scheduler has specified the next GoRoutine that must be executed
+	// This value is only used during replay and explore
+	ROUTINE_SCHEDULE = -5
+)
+
 //Type which encapsulates a single schedule
 type Schedule struct {
 	LogEvents []Event
