@@ -18,6 +18,7 @@ package runtime
 //  c.qcount < c.dataqsiz implies that c.sendq is empty.
 
 import (
+	"dara"
 	"runtime/internal/atomic"
 	"unsafe"
 )
@@ -47,6 +48,27 @@ type hchan struct {
 	// (in particular, do not ready a G), as this can deadlock
 	// with stack shrinking.
 	lock mutex
+}
+
+type emptyInterface struct {
+	typ *_type
+	word unsafe.Pointer
+}
+
+func NumDeliveries(ch interface{}) int {
+	if DaraInitialised {
+		ef := (*emptyInterface)(unsafe.Pointer(&ch))
+		return ChanRecvInfo[ef.word]
+	}
+	return -1
+}
+
+func NumSendings(ch interface{}) int {
+	if DaraInitialised {
+		ef := (*emptyInterface)(unsafe.Pointer(&ch))
+		return ChanSendInfo[ef.word]
+	}
+	return -1
 }
 
 type waitq struct {
@@ -189,6 +211,13 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 		// Found a waiting receiver. We pass the value we want to send
 		// directly to the receiver, bypassing the channel buffer (if any).
 		send(c, sg, ep, func() { unlock(&c.lock) }, 3)
+		if DaraInitialised {
+			if v, ok := ChanSendInfo[unsafe.Pointer(c)]; ok {
+				ChanSendInfo[unsafe.Pointer(c)] = v + 1
+			} else {
+				ChanSendInfo[unsafe.Pointer(c)] = 1
+			}
+		}
 		return true
 	}
 
@@ -206,6 +235,13 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 		}
 		c.qcount++
 		unlock(&c.lock)
+		if DaraInitialised {
+			if v, ok := ChanSendInfo[unsafe.Pointer(c)]; ok {
+				ChanSendInfo[unsafe.Pointer(c)] = v + 1
+			} else {
+				ChanSendInfo[unsafe.Pointer(c)] = 1
+			}
+		}
 		return true
 	}
 
@@ -250,6 +286,13 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 	}
 	mysg.c = nil
 	releaseSudog(mysg)
+	if DaraInitialised {
+		if v, ok := ChanSendInfo[unsafe.Pointer(c)]; ok {
+			ChanSendInfo[unsafe.Pointer(c)] = v + 1
+		} else {
+			ChanSendInfo[unsafe.Pointer(c)] = 1
+		}
+	}
 	return true
 }
 
@@ -416,6 +459,9 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	// raceenabled: don't need to check ep, as it is always on the stack
 	// or is new memory allocated by reflect.
 
+	
+	dprint(dara.INFO, func() {println("[GoRuntime]chanrecv: chan=", c)})
+
 	if debugChan {
 		print("chanrecv: chan=", c, "\n")
 	}
@@ -461,6 +507,7 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 		if ep != nil {
 			typedmemclr(c.elemtype, ep)
 		}
+		dprint(dara.INFO, func() {println("[GoRuntime]chanrecv: channel closed before delivery")})
 		return true, false
 	}
 
@@ -470,6 +517,13 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 		// and add sender's value to the tail of the queue (both map to
 		// the same buffer slot because the queue is full).
 		recv(c, sg, ep, func() { unlock(&c.lock) }, 3)
+		if DaraInitialised {
+			if v, ok := ChanRecvInfo[unsafe.Pointer(c)]; ok {
+				ChanRecvInfo[unsafe.Pointer(c)] = v + 1
+			} else {
+				ChanRecvInfo[unsafe.Pointer(c)] = 1
+			}
+		}
 		return true, true
 	}
 
@@ -490,6 +544,13 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 		}
 		c.qcount--
 		unlock(&c.lock)
+		if DaraInitialised {
+			if v, ok := ChanRecvInfo[unsafe.Pointer(c)]; ok {
+				ChanRecvInfo[unsafe.Pointer(c)] = v + 1
+			} else {
+				ChanRecvInfo[unsafe.Pointer(c)] = 1
+			}
+		}
 		return true, true
 	}
 
@@ -516,6 +577,8 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	gp.param = nil
 	c.recvq.enqueue(mysg)
 	goparkunlock(&c.lock, "chan receive", traceEvGoBlockRecv, 3)
+	// Vaas: Because this goroutine doesn't get scheduled after a message is sent
+	// the recv is never completed
 
 	// someone woke us up
 	if mysg != gp.waiting {
@@ -529,6 +592,17 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	gp.param = nil
 	mysg.c = nil
 	releaseSudog(mysg)
+	if DaraInitialised {
+		if !closed {
+			if v, ok := ChanRecvInfo[unsafe.Pointer(c)]; ok {
+				ChanRecvInfo[unsafe.Pointer(c)] = v + 1
+			} else {
+				ChanRecvInfo[unsafe.Pointer(c)] = 1
+			}
+		} else {
+			dprint(dara.INFO, func() {println("[GoRuntime]recv: Channel closed before delivery")} )
+		}
+	}
 	return true, !closed
 }
 
