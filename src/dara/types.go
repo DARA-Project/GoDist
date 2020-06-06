@@ -174,6 +174,12 @@ type CoverageEvent struct {
 	EventIndex int
 }
 
+type FailedPropertyEvent struct {
+	Name string
+	Context map[string]interface{}
+	EventIndex int
+}
+
 type LogEntry struct {
 	LogID string
 	Vars []NameValuePair
@@ -239,6 +245,7 @@ const (
 
 //Type which encapsulates a single schedule
 type Schedule struct {
-	LogEvents []Event
-	CovEvents []CoverageEvent
+	LogEvents  []Event
+	CovEvents  []CoverageEvent
+	PropEvents []FailedPropertyEvent
 }
