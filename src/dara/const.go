@@ -8,9 +8,10 @@ const (
 	PROT_WRITE = 0x2
 
 	//The number of preallocated communication channels in shared
-	//memory. This value can change in the future, for now 5 is the
+	//memory. This value can change in the future, for now 3 is the
 	//maximum number of Processes. Invariant: dara.CHANNELS >= procs. TODO
 	//assert this
+    // 3 is maximum because DaraProcID starts from 1.... Need to fix that
 	CHANNELS = 4
 
 	//File discriptor for shared memory. This is set in the runscript.
@@ -27,7 +28,8 @@ const (
 	SHAREDMEMPAGES = 65536*4
 
 	// TODO : This must be automated and not hardcoded
-	DARAPROCSIZE = 106791048
+    // THIS SHOULD MATCH THE SIZE OF THE DaraProc struct.
+	DARAPROCSIZE = 127533200
 
 	SCHEDLEN = 1000000000
 	PROCS = 3
