@@ -3143,7 +3143,6 @@ func getScheduledGp(gp *g) *g {
 			//must be more expressive
 			dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Inside running") })
 			dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Value of run variable :", procchan[DPid].Run) })
-			// Possible BUG : Something is wrong with RunningGoid. Trace the value of this to make sense as to what the fuck is this
 			if procchan[DPid].Run == -3 {
 				dprint(dara.INFO, func() {
 					println("[GoRuntime]getScheduledGp : Reporting Scheduling event with GoID", RunningGoid, origgp.goid)
