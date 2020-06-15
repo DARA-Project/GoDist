@@ -177,7 +177,15 @@ type CoverageEvent struct {
 type FailedPropertyEvent struct {
 	Name string
 	Context map[string]interface{}
+}
+
+type PropCheckEvent struct {
+	PropFailures []FailedPropertyEvent
 	EventIndex int
+}
+
+func CreatePropCheckEvent(propertyEvents []FailedPropertyEvent, index int) PropCheckEvent {
+	return PropCheckEvent{propertyEvents, index}
 }
 
 type LogEntry struct {
@@ -247,5 +255,5 @@ const (
 type Schedule struct {
 	LogEvents  []Event
 	CovEvents  []CoverageEvent
-	PropEvents []FailedPropertyEvent
+	PropEvents []PropCheckEvent
 }
