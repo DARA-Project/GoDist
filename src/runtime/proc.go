@@ -2704,17 +2704,12 @@ var dgStatusStrings = [...]string{
 	_Gcopystack: "copystack",
 }
 
-var (
-	smptr    unsafe.Pointer //unsafe shared memory pointer
-	err      int
-	procchan *[dara.CHANNELS]dara.DaraProc
-)
-
-func SchedulerPrint(msg string) {
-	print(msg)
-}
-
-//DaraLog("VaasState","a,b,c,BadVariableName",a,b,c,BadVariableName)
+// DaraLog provides the global scheduler with pairings of variable names and their values
+// Usage: runtime.DaraLog("VaasState","a,b,c,BadVariableName",a,b,c,BadVariableName)
+// Effect: If the variable does not exist in the context used for property checking, the variable
+//         along with its value will be added to the context.
+//         If the variable does exist in the context used for property checking, the value of the
+//         variable will be updated in the context.
 func DaraLog(LogID, names string, values ...interface{}) {
 	index := procchan[DPid].LogIndex
 	if index >= dara.MAXLOGENTRIES {
@@ -2736,6 +2731,37 @@ func DaraLog(LogID, names string, values ...interface{}) {
 		(*e).ELE.Vars[i].VarName = str2byte64(splitnames[i])
 		(*e).ELE.Vars[i].Value = encode(values[i])
 		(*e).ELE.Vars[i].Type = str2byte64(getType(values[i]))
+	}
+	//This type of event is log, not syscall or sched. Zero the rest
+	//of memory in the log to prevent bugs
+	(*e).SyscallInfo = dara.GeneralSyscall{}
+	(*e).EM = dara.EncodedMessage{}
+	//logging finished update index
+	procchan[DPid].LogIndex++
+}
+
+// DaraDeleteLogVar Deletes log variables
+// Usage: runtime.DaraDeleteLogVar("UniqueID", "VarA", "VarB", "VarC")
+// Effect: VarA, VarB, and VarC will be deleted from the current context used for property checking
+// Note: A subsequent call to DaraLog with any of these variables will add the variable back to the context.
+func DaraDeleteLogVar(LogID string, names ...string) {
+	index := procchan[DPid].LogIndex	
+	if index >= dara.MAXLOGENTRIES {
+		panic("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+	}
+	if len(names) >= dara.MAXLOGVARIABLES {
+		panic("variables logged in " + LogID + " Exceeds MAXLOGVARIABLES, either modify dara/const or log fewer variables")
+	}
+	e := &(procchan[DPid].Log[index])
+	(*e).Type = dara.DELETEVAR_EVENT
+	(*e).P = DPid
+	(*e).G = procchan[DPid].RunningRoutine
+	(*e).Epoch = procchan[DPid].Epoch
+
+	(*e).ELE.Length = len(names)
+	(*e).ELE.LogID = str2byte64(LogID)
+	for i := range names {
+		(*e).ELE.Vars[i].VarName = str2byte64(names[i])
 	}
 	//This type of event is log, not syscall or sched. Zero the rest
 	//of memory in the log to prevent bugs
@@ -3012,13 +3038,8 @@ func str2byte64(s string) (ret [dara.VARBUFLEN]byte) {
 }
 
 func initDara() {
-	ProcCounter = 0
-	LastProc = -1
-	LastProcCounter = 0
-	ProcInit = true
+	DaraInitialised = true
 	Running = true
-	RunIndex = 0
-	ScheduleIndex = 0
 	if level, ok := atoi(gogetenv("DARA_LOG_LEVEL")); ok {
 		DDebugLevel = int(level)
 		println("[GoRuntime]Setting debug level to", DDebugLevel)
@@ -3043,6 +3064,7 @@ func initDara() {
 		FastReplay = true
 	}
 
+	var err int
 	smptr, err = mmap(nil, dara.SHAREDMEMPAGES*dara.PAGESIZE, _PROT_READ|_PROT_WRITE, dara.MAP_SHARED, dara.DARAFD, 0)
 	if err != 0 {
 		switch err {
@@ -3100,7 +3122,6 @@ func initDara() {
 	}
 
 	atomic.Store(&(procchan[DPid].SyscallLock), dara.LOCKED)
-	DaraInitialised = true
 	procchan[DPid].RunningRoutine = procchan[DPid].Routines[1]
 	LogInitEvent()
 	dprint(dara.DEBUG, func() { println("[GoRuntime]initDara : Dara Initialization Complete") })
@@ -3127,7 +3148,7 @@ func endDara() {
 func getScheduledGp(gp *g) *g {
 	origgp := gp
 	end_of_Replay := false
-	if ProcInit {
+	if DaraInitialised {
 	top:
 		for i := 0; i < len(allgs); i++ {
 			procchan[DPid].Routines[allgs[i].goid].Status = readgstatus(allgs[i])
@@ -3246,6 +3267,7 @@ func getScheduledGp(gp *g) *g {
 					if gp.gopc == procchan[DPid].RunningRoutine.Gpc && gp.goid == int64(procchan[DPid].RunningRoutine.Gid) {
 						dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Chosen goroutine is ready to be run") })
 					} else {
+						// Do we need a call to this at all?
 						gp = findallrunnableprocs(gp)
 					}
 
@@ -3509,7 +3531,7 @@ func CheckAndResetProcArr(gp *g) (*g, bool) {
 
 //Dara internal function
 func dprint(loglevel int, pfunc func()) {
-	if !ProcInit || DDebugLevel == dara.OFF {
+	if !DaraInitialised || DDebugLevel == dara.OFF {
 		return
 	}
 	if loglevel == dara.FATAL {
@@ -3535,83 +3557,35 @@ func ResetProcArr(gp *g) {
 	gpcounter = 0
 }
 
-func procLookup(gp *g) (int64, bool) {
+// Dara Constants and Variables
 
-	if gp.goid > int64(len(ProcArr)) || gp.goid < 0 {
-		//Out of range id
-		//print("out of range lookup\n")
-		return -2, false
-	}
-	if ProcArr[gp.goid] == nil {
-		//print("gp lookup is nil\n")
-		return -1, false
-	}
-	if ProcArr[gp.goid] == gp {
-		return gp.goid, true
-	}
-	//print("gp pointer compairison failed\n")
-	return -3, false
-}
-
-//go:yeswritebarrierrec
-func procWrite(gp *g) {
-	if gp.goid > int64(len(ProcArr)) || gp.goid < 0 {
-		//Out of range id
-		return
-	}
-	ProcArr[gp.goid] = gp
-	RunQueue[ProcCounter] = gp.goid
-	ProcCounter++
-	return
-}
-
-//go:yeswritebarrierrec
-func ReleaseProcs() {
-	var i int
-	for i = range ProcArr {
-		if ProcArr[i] != nil {
-			casgstatus(ProcArr[i], readgstatus(ProcArr[i]), _Gwaiting)
-			ready(ProcArr[i], 0, true)
-			ProcArr[i] = nil
-		}
-	}
-}
+// Variables for shared memory
+var (
+	smptr    unsafe.Pointer //unsafe shared memory pointer
+	procchan *[dara.CHANNELS]dara.DaraProc
+)
 
 const PROC_SIZE = 4096
 
 var (
-	DDebugLevel     int
-	ProcInit        bool
-	ProcCounter     int
-	LastProc        int64
-	LastProcCounter int
-	ProcID          int64
-	ProcOk          bool
-	ProcArr         [PROC_SIZE]*g
-	gpcounter       int
-	RunQueue        [PROC_SIZE]int64
-	RunIndex        int64
-	ScheduleIndex   int
-	DaraProgram     string
-	DPid            int
-	Running         bool
-	RunningGoid     int64
+	DDebugLevel     int // Dara Debug Level
+	ProcArr         [PROC_SIZE]*g // Contains all the goroutines
+	gpcounter       int // Total number of goroutines that have been launched
+	DPid            int // The Dara ProcessID. This is the index into the shared memory.
+	Running         bool // Tracks if the local runtime is running a goroutine
+	RunningGoid     int64 // The ID of the goroutine currently running
 	ReplayIndex     int  = 1 //Start at 1 because the main function will be the first thing that needs to be launched
-	Record          bool = false
-	Replay          bool = false
-	Explore         bool = false
-	FastReplay      bool = false
-	DaraInitialised bool = false
-	HasDaraLock     bool = false
-	CoverageInfo    map[string]uint64
-	ChanSendInfo    map[unsafe.Pointer]int
-	ChanRecvInfo    map[unsafe.Pointer]int
+	Record          bool = false // Specifies if we are in the record mode
+	Replay          bool = false // Specifies if we are in the normal replay mode
+	Explore         bool = false // Specifies if we are in the exploration mode
+	FastReplay      bool = false // Specifies if we are in the fast replay mode
+	DaraInitialised bool = false // Is Dara Initialised?
+	HasDaraLock     bool = false // Do we currently have the lock to shared memory?
+	CoverageInfo    map[string]uint64 // Mapping between unique block ID and the counter of how many times the block was hit
+	ChanSendInfo    map[unsafe.Pointer]int // Mapping between address of a channel and the number of successful sends on the channel
+	ChanRecvInfo    map[unsafe.Pointer]int // Mapping between address of a channel and the number of successful receives on the channel
 )
 
-type Schedule struct {
-	Id int64
-	Pc uintptr
-}
 
 // dropg removes the association between m and the current goroutine m->curg (gp for short).
 // Typically a caller sets gp's status away from Grunning and then
@@ -4439,7 +4413,7 @@ func newproc1(fn *funcval, argp *uint8, narg int32, callerpc uintptr) {
 	//instance of a prior pc may be over written, in which case the
 	//duplicate counter will be wrong and the schedule will be
 	//squewed
-	if ProcInit {
+	if DaraInitialised {
 
 		f := findfunc(fn.fn)
 		name := funcname(f)

@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"dara"
+	"unsafe"
 )
 
 func Is_dara_profiling_on() bool {
@@ -49,4 +50,34 @@ func dara_Stack() []byte {
 		}
 		buf = make([]byte, 2*len(buf))
 	}
+}
+
+// Functions for reporting data to users
+
+type emptyInterface struct {
+	typ *_type
+	word unsafe.Pointer
+}
+
+func NumDeliveries(ch interface{}) int {
+	if DaraInitialised {
+		ef := (*emptyInterface)(unsafe.Pointer(&ch))
+		return ChanRecvInfo[ef.word]
+	}
+	return -1
+}
+
+func NumSendings(ch interface{}) int {
+	if DaraInitialised {
+		ef := (*emptyInterface)(unsafe.Pointer(&ch))
+		return ChanSendInfo[ef.word]
+	}
+	return -1
+}
+
+func DaraProcessID() int {
+	if DaraInitialised {
+		return DPid
+	}
+	return -1
 }

@@ -50,27 +50,6 @@ type hchan struct {
 	lock mutex
 }
 
-type emptyInterface struct {
-	typ *_type
-	word unsafe.Pointer
-}
-
-func NumDeliveries(ch interface{}) int {
-	if DaraInitialised {
-		ef := (*emptyInterface)(unsafe.Pointer(&ch))
-		return ChanRecvInfo[ef.word]
-	}
-	return -1
-}
-
-func NumSendings(ch interface{}) int {
-	if DaraInitialised {
-		ef := (*emptyInterface)(unsafe.Pointer(&ch))
-		return ChanSendInfo[ef.word]
-	}
-	return -1
-}
-
 type waitq struct {
 	first *sudog
 	last  *sudog
