@@ -54,6 +54,10 @@ type DaraProc struct {
 	//SyscallLock is used to control the reporting of the syscalls.
 	SyscallLock uint32
 
+	//PID is the Linux Process ID. Since we are limited to GOMAXPROCS=1
+	//there is only 1 system thread/process ID.
+	PID uint64
+
 	//Run is a deprecated var with multiple purposes. Procs set their
 	//Run to -1 when they Are done running (in replay mode) to let the
 	//scheduler know they are done. The global scheduler sets this

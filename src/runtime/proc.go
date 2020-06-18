@@ -199,8 +199,9 @@ func main() {
 	fn = main_main // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
 	//@DARA INJET
 	if gogetenv("DARAON") == "true" {
-		initDara()
+		initDara(g.m.procid)
 		RunningGoid = g.goid
+		dprint(dara.INFO, func(){ println("Adding scheduling event with RunningGoid", RunningGoid) })
 		LogSchedulingEvent(procchan[DPid].Routines[int(RunningGoid)])
 	}
 	//\@DARA INJECT
@@ -3037,7 +3038,7 @@ func str2byte64(s string) (ret [dara.VARBUFLEN]byte) {
 	return
 }
 
-func initDara() {
+func initDara(proc_pid uint64) {
 	DaraInitialised = true
 	Running = true
 	if level, ok := atoi(gogetenv("DARA_LOG_LEVEL")); ok {
@@ -3065,7 +3066,7 @@ func initDara() {
 	}
 
 	var err int
-	smptr, err = mmap(nil, dara.SHAREDMEMPAGES*dara.PAGESIZE, _PROT_READ|_PROT_WRITE, dara.MAP_SHARED, dara.DARAFD, 0)
+	smptr, err = mmap(nil, dara.CHANNELS*dara.DARAPROCSIZE, _PROT_READ|_PROT_WRITE, dara.MAP_SHARED, dara.DARAFD, 0)
 	if err != 0 {
 		switch err {
 		case _EINTR:
@@ -3085,6 +3086,10 @@ func initDara() {
 	} else {
 		dprint(dara.FATAL, func() { println("[GoRuntime]initDara : DARA turned on but DARAPID not set") })
 	}
+
+	// Set the process ID
+	procchan[DPid].PID = proc_pid
+
 	//Set up goid table for the inital threads?
 
 	for {

@@ -22,14 +22,9 @@ const (
 	UNLOCKED = 0
 	LOCKED = 1
 
-	//The total size of the shared memory region is
-        //dara.PAGESIZE*dara.SHAREDMEMPAGES
-	PAGESIZE = 4096
-	SHAREDMEMPAGES = 65536*4
-
 	// TODO : This must be automated and not hardcoded
     // THIS SHOULD MATCH THE SIZE OF THE DaraProc struct.
-	DARAPROCSIZE = 127533200
+	DARAPROCSIZE = 127533208
 
 	SCHEDLEN = 1000000000
 	PROCS = 3
