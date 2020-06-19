@@ -2874,6 +2874,8 @@ func LogThreadCreation(routine dara.RoutineInfo) {
 //go:yeswritebarrierrec
 func LogCrash(routine dara.RoutineInfo) {
 	index := procchan[DPid].LogIndex
+	// Set the Run variable to -100 to tell global scheduler that process is going to die
+	procchan[DPid].Run = -100
 	if FastReplay {
 		return
 	}
