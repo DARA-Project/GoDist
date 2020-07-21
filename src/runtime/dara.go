@@ -23,18 +23,39 @@ func Is_Dara_On() bool {
 func ReportBlockCoverage(blockID string) {
     // Update counter for the block
     if DaraInitialised {
+		var start int64
+		if Microbenchmark {
+			start = nanotime()
+		}
         if v, ok := CoverageInfo[blockID]; ok {
             CoverageInfo[blockID] = v + 1
         } else {
             CoverageInfo[blockID] = uint64(1)
-        }
+		}
+		if Microbenchmark {
+			end := nanotime() - start
+			dprint(dara.INFO, func() { println("Time spent for coverage was", end, "nanoseconds")})
+			//TODO: Store end result somewhere!
+			_ = end
+		}
         dprint(dara.DEBUG, func() {println("Reporting coverage for block:", blockID)} )
     }
 }
 
 func Report_Syscall_To_Scheduler(syscallID int, syscallInfo dara.GeneralSyscall) {
 	//report_syscall(syscallID, syscallInfo) //TODO remove this it's redundent and slow
+	var start int64
+	if Microbenchmark {
+		// Get the time in nanoseconds (atleast I think this is what the function does)
+		start = nanotime()
+	}
 	LogSyscall(syscallInfo)
+	if Microbenchmark {
+		end := nanotime() - start
+		dprint(dara.INFO, func() { println("Time spent was", end, "nanoseconds")})
+		// TODO: Store the end time somewhere
+		_ = end
+	}
 }
 
 func Dara_Debug_Print(pfunc func()) {

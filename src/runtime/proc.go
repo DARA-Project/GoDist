@@ -3067,6 +3067,13 @@ func initDara(proc_pid uint64) {
 		FastReplay = true
 	}
 
+	microbenchmarking := gogetenv("UBENCHMARK")
+	if microbenchmarking == "true" {
+		Microbenchmark = true
+	}
+	// Remove once testing complete
+	Microbenchmark = true
+
 	var err int
 	smptr, err = mmap(nil, dara.CHANNELS*dara.DARAPROCSIZE, _PROT_READ|_PROT_WRITE, dara.MAP_SHARED, dara.DARAFD, 0)
 	if err != 0 {
@@ -3591,6 +3598,7 @@ var (
 	CoverageInfo    map[string]uint64 // Mapping between unique block ID and the counter of how many times the block was hit
 	ChanSendInfo    map[unsafe.Pointer]int // Mapping between address of a channel and the number of successful sends on the channel
 	ChanRecvInfo    map[unsafe.Pointer]int // Mapping between address of a channel and the number of successful receives on the channel
+	Microbenchmark  bool = false // Are we collecting microbenchmarking as part of this run
 )
 
 
