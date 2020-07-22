@@ -291,108 +291,6 @@ func (file *file) close() error {
 	return err
 }
 
-<<<<<<< HEAD
-=======
-// read reads up to len(b) bytes from the File.
-// It returns the number of bytes read and an error, if any.
-func (f *File) read(b []byte) (n int, err error) {
-	n, err = f.pfd.Read(b)
-	runtime.KeepAlive(f)
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-        runtime.Dara_Debug_Print(func() {
-		    print("[READ] : ")
-		    println(f.file.name)
-        })
-		argInfo1 := dara.GeneralType{Type: dara.FILE}
-        copy(argInfo1.String[:], f.name)
-		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
-		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
-		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
-		syscallInfo := dara.GeneralSyscall{dara.DSYS_READ, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READ, syscallInfo)
-	}
-	return n, err
-}
-
-// pread reads len(b) bytes from the File starting at byte offset off.
-// It returns the number of bytes read and the error, if any.
-// EOF is signaled by a zero count with err set to nil.
-func (f *File) pread(b []byte, off int64) (n int, err error) {
-	n, err = f.pfd.Pread(b, off)
-	runtime.KeepAlive(f)
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-        runtime.Dara_Debug_Print(func() {
-		    print("[PREAD] : ")
-		    print(f.file.name)
-		    print(" ")
-		    println(off)
-        })
-		argInfo1 := dara.GeneralType{Type: dara.FILE}
-        copy(argInfo1.String[:], f.name)
-		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
-		argInfo3 := dara.GeneralType{Type: dara.INTEGER64, Integer64: off}
-		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
-		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
-		syscallInfo := dara.GeneralSyscall{dara.DSYS_PREAD64, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PREAD64, syscallInfo)
-	}
-	return n, err
-}
-
-// write writes len(b) bytes to the File.
-// It returns the number of bytes written and an error, if any.
-func (f *File) write(b []byte) (n int, err error) {
-	n, err = f.pfd.Write(b)
-	runtime.KeepAlive(f)
-	// DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-        runtime.Dara_Debug_Print(func() {
-		    print("[WRITE] : ")
-		    print(f.file.name)
-		    print(" ")
-		    println(string(b[:len(b)]))
-        })
-		argInfo1 := dara.GeneralType{Type: dara.FILE}
-        copy(argInfo1.String[:], f.name)
-		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
-		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
-		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
-		syscallInfo := dara.GeneralSyscall{dara.DSYS_WRITE, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_WRITE, syscallInfo)
-	}
-	return n, err
-}
-
-// pwrite writes len(b) bytes to the File starting at byte offset off.
-// It returns the number of bytes written and an error, if any.
-func (f *File) pwrite(b []byte, off int64) (n int, err error) {
-    // DARA Instrumentation
-	if runtime.Is_dara_profiling_on() {
-        runtime.Dara_Debug_Print(func() {
-		    print("[PWRITE] : ")
-		    print(f.file.name)
-		    print(" ")
-		    print(string(b[:len(b)]))
-		    print(" ")
-		    println(off)
-        })
-		argInfo1 := dara.GeneralType{Type: dara.FILE}
-        copy(argInfo1.String[:], f.name)
-		argInfo2 := dara.GeneralType{Type: dara.ARRAY, Integer: len(b)}
-		argInfo3 := dara.GeneralType{Type: dara.INTEGER64, Integer64: off}
-		retInfo1 := dara.GeneralType{Type: dara.INTEGER, Integer: n}
-		retInfo2 := dara.GeneralType{Type: dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
-		syscallInfo := dara.GeneralSyscall{dara.DSYS_PWRITE64, 3, 2, [10]dara.GeneralType{argInfo1, argInfo2, argInfo3}, [10]dara.GeneralType{retInfo1, retInfo2}}
-		runtime.Report_Syscall_To_Scheduler(dara.DSYS_PWRITE64, syscallInfo)
-	}
-	n, err = f.pfd.Pwrite(b, off)
-	runtime.KeepAlive(f)
-	return n, err
-}
-
->>>>>>> 277acdb... GoDist commits squashed!
 // seek sets the offset for the next Read or Write on file to offset, interpreted
 // according to whence: 0 means relative to the origin of the file, 1 means
 // relative to the current offset, and 2 means relative to the end.
@@ -563,6 +461,21 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 			continue
 		}
 		if lerr != nil {
+			if runtime.Is_dara_profiling_on() {
+                runtime.Dara_Debug_Print(func() {
+				    print("[Readdir] : ")
+				    print(f.file.name)
+				    print(" ")
+				    println(n)
+                })
+				argInfo1 := dara.GeneralType{Type:dara.FILE}
+                copy(argInfo1.String[:], f.name)
+				argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
+				retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
+				retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+				syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIR, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+				runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR, syscallInfo)
+			}
 			return fi, lerr
 		}
 		fi = append(fi, fip)
@@ -571,6 +484,22 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		// Per File.Readdir, the slice must be non-empty or err
 		// must be non-nil if n > 0.
 		err = io.EOF
+	}
+	// DARA Instrumentation
+	if runtime.Is_dara_profiling_on() {
+        runtime.Dara_Debug_Print(func() {
+		    print("[Readdir] : ")
+		    print(f.file.name)
+		    print(" ")
+		    println(n)
+        })
+		argInfo1 := dara.GeneralType{Type:dara.FILE}
+        copy(argInfo1.String[:], f.name)
+		argInfo2 := dara.GeneralType{Type:dara.INTEGER, Integer:n}
+		retInfo1 := dara.GeneralType{Type:dara.ARRAY, Integer: len(fi)}
+		retInfo2 := dara.GeneralType{Type:dara.ERROR, Unsupported: dara.UNSUPPORTEDVAL}
+		syscallInfo := dara.GeneralSyscall{dara.DSYS_READDIR, 2, 2, [10]dara.GeneralType{argInfo1, argInfo2}, [10]dara.GeneralType{retInfo1, retInfo2}}
+		runtime.Report_Syscall_To_Scheduler(dara.DSYS_READDIR, syscallInfo)
 	}
 	return fi, err
 }

@@ -192,14 +192,9 @@ func timeSleep(ns int64) {
     //Dara injection
     if Replay || Explore {
         dprint(dara.INFO, func () {println("[GoRoutine]timeSleep : Goroutine here for nap time")})
-        //Don't install the timer in replay but obtain the lock :)
-        tb := t.assignBucket()
-        lock(&tb.lock)
-        goparkunlock(&tb.lock, "sleep", traceEvGoSleep, 2)
-        return
-    }
-    if Replay || Explore{
-        dprint(dara.WARN, func () {println("[GoRuntime]timeSleep : We shouldn't be here wtf")})
+		//Install the timer but set the sleep time to be 0 so that the timer goes off ASAP.
+		//Not sure how well this will work but let's see.
+        ns = 0
     }
 	t.f = goroutineReady
 	t.arg = gp

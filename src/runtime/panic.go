@@ -1120,10 +1120,29 @@ func throw(s string) {
 		gp.m.throwing = 1
 	}
     if DaraInitialised {
-        dprint(dara.INFO, func() {println("[GoRuntime]throw : Inside throw now")})
-        LogCrash(procchan[DPid].Routines[int(gp.goid)])
-        endDara()
-    }
+		//dprint(dara.INFO, func() {println("[GoRuntime]throw : Inside throw now")})
+		// Call to LogCrash keeps causing stack overflow during the linking phase
+		// because there is a low amount of nosplit stack in throw.....
+		// So call LogCrash and endDara on the systemstack and hopefully this would
+		// work out well. If it doesn't work in some situation then no clue what to do.
+		systemstack(func() {
+			LogCrash(procchan[DPid].Routines[int(gp.goid)])
+			endDara()
+		})
+	}
+	fatalthrow()
+	*(*int)(nil) = 0 // not reached
+}
+
+//go:nosplit
+func daraThrow(s string) {
+	systemstack(func() {
+		print("fatal error: ", s, "\n")
+	})
+	gp := getg()
+	if gp.m.throwing == 0 {
+		gp.m.throwing = 1
+	}
 	fatalthrow()
 	*(*int)(nil) = 0 // not reached
 }

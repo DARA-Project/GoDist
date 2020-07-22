@@ -30,6 +30,8 @@ const (
 	debugChan = false
 )
 
+
+
 type hchan struct {
 	qcount   uint           // total data in the queue
 	dataqsiz uint           // size of the circular queue

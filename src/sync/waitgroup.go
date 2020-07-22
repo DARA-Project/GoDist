@@ -52,7 +52,7 @@ func (wg *WaitGroup) state() (statep *uint64, semap *uint32) {
 // If a WaitGroup is reused to wait for several independent sets of events,
 // new Add calls must happen after all previous Wait calls have returned.
 // See the WaitGroup example.
-func (wg *WaitGroup) Add(delta int) {x
+func (wg *WaitGroup) Add(delta int) {
     if runtime.Is_dara_profiling_on() {
         runtime.Dara_Debug_Print(func() {
             print("[Wg.Add] : ")

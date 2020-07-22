@@ -254,7 +254,7 @@ func os_beforeExit() {
 // start forcegc helper goroutine
 func init() {
 	//@DARA Inject - Do not run garbage collection
-	dprint(dara.DEBUG, func() { println("Initializing runtime") })
+	//dprint(dara.DEBUG, func() { println("Initializing runtime") })
 	return
 	//\@DARA Inject
 	go forcegchelper()
@@ -318,7 +318,7 @@ func gopark(unlockf func(*g, unsafe.Pointer) bool, lock unsafe.Pointer, reason w
 	gp.waitreason = reason
 	mp.waittraceev = traceEv
 	mp.waittraceskip = traceskip
-	dprint(dara.DEBUG, func() { println("[GoRuntime]gopark : Parking m because of reason", reason) })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]gopark : Parking m because of reason", reason) })
 	releasem(mp)
 	// can't do anything that might move the G between Ms here.
 	mcall(park_m)
@@ -331,7 +331,7 @@ func goparkunlock(lock *mutex, reason waitReason, traceEv byte, traceskip int) {
 }
 
 func goready(gp *g, traceskip int) {
-	dprint(dara.INFO, func() { println("[GoRuntime]goready : Adding goroutine", gp.goid, "to ready queue") })
+	//dprint(dara.INFO, func() { println("[GoRuntime]goready : Adding goroutine", gp.goid, "to ready queue") })
 	systemstack(func() {
 		ready(gp, traceskip, true)
 	})
@@ -715,7 +715,7 @@ func ready(gp *g, traceskip int, next bool) {
 	mp := acquirem() // disable preemption because it can be holding p in a local var
 	if status&^_Gscan != _Gwaiting {
 		//dumpgstatus(gp)
-		dprint(dara.DEBUG, func() { schedtrace(true) })
+		//dprint(dara.DEBUG, func() { schedtrace(true) })
 		throw("bad g->status in ready")
 	}
 
@@ -1192,7 +1192,7 @@ func mstart1() {
 		acquirep(_g_.m.nextp.ptr())
 		_g_.m.nextp = 0
 	}
-	dprint(dara.DEBUG, func() { println("[GoRuntime]mstart1 : Scheduling inside mstart1") })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]mstart1 : Scheduling inside mstart1") })
 	schedule()
 }
 
@@ -1643,7 +1643,7 @@ func oneNewExtraM() {
 		gp.racectx = racegostart(funcPC(newextram) + sys.PCQuantum)
 	}
 	// put on allg for garbage collector
-	dprint(dara.DEBUG, func() { println("[GoRoutine]oneNewExtraM : Adding garbage collector thread to allgs") })
+	//dprint(dara.DEBUG, func() { println("[GoRoutine]oneNewExtraM : Adding garbage collector thread to allgs") })
 	allgadd(gp)
 
 	// gp is now on the allg list, but we don't want it to be
@@ -1908,7 +1908,7 @@ func templateThread() {
 // Stops execution of the current m until new work is available.
 // Returns with acquired P.
 func stopm() {
-	dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Inside stopm") })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Inside stopm") })
 	_g_ := getg()
 
 	if _g_.m.locks != 0 {
@@ -1925,16 +1925,17 @@ func stopm() {
 	mput(_g_.m)
 	unlock(&sched.lock)
 	//schedtrace(true)
-	dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Calling notesleep") })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Calling notesleep") })
 	notesleep(&_g_.m.park)
 	//DARA NOTE this has the potential to stop
-	dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Calling noteclear") })
+//	dprint(dara.DEBUG, func() { println("[GoRuntime]stopm : Calling noteclear") })
 	noteclear(&_g_.m.park)
 	acquirep(_g_.m.nextp.ptr())
 	_g_.m.nextp = 0
 }
 
 // Stew's version of stopm. God knows why we need this.
+/* Commenting out as it references OLD code
 func dstopm() {
 	_g_ := getg()
 	if _g_.m.locks != 0 {
@@ -1968,6 +1969,7 @@ retry:
 	//_g_.m.nextp = 0
 
 }
+*/
 
 func mspinning() {
 	// startm's caller incremented nmspinning. Set the new M's spinning.
@@ -2113,7 +2115,7 @@ func stoplockedm() {
 	noteclear(&_g_.m.park)
 	status := readgstatus(_g_.m.lockedg.ptr())
 	if status&^_Gscan != _Grunnable {
-		dprint(dara.WARN, func() { println("[GoRuntime]runtime:stoplockedm: g is not Grunnable or Gscanrunnable") })
+		//dprint(dara.WARN, func() { println("[GoRuntime]runtime:stoplockedm: g is not Grunnable or Gscanrunnable") })
 		dumpgstatus(_g_)
 		throw("stoplockedm: not runnable")
 	}
@@ -2244,7 +2246,7 @@ top:
 
 	// local runq
 	if gp, inheritTime := runqget(_p_); gp != nil {
-		dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - popping g off of local runq") })
+		//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - popping g off of local runq") })
 		return gp, inheritTime
 	}
 
@@ -2254,7 +2256,7 @@ top:
 		gp := globrunqget(_p_, 0)
 		unlock(&sched.lock)
 		if gp != nil {
-			dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - popping g off of global runq") })
+			//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - popping g off of global runq") })
 			return gp, false
 		}
 	}
@@ -2274,7 +2276,7 @@ top:
 			if trace.enabled {
 				traceGoUnpark(gp, 0)
 			}
-			dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - found g by polling the network") })
+			//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - found g by polling the network") })
 			return gp, false
 		}
 	}
@@ -2296,9 +2298,7 @@ top:
 			}
 		}
 		if numRunnable > 0 {
-			dprint(dara.INFO, func() {
-				println("[GoRuntime]findrunnable - found", numRunnable, "runnable goroutines not on any queue")
-			})
+			//dprint(dara.INFO, func() {	println("[GoRuntime]findrunnable - found", numRunnable, "runnable goroutines not on any queue")})
 			goto top
 		}
 	}
@@ -2327,7 +2327,7 @@ top:
 				continue
 			}
 			if gp := runqsteal(_p_, p2, stealRunNextG); gp != nil {
-				dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - stolen g from other p") })
+				//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - stolen g from other p") })
 				return gp, false
 			}
 
@@ -2370,7 +2370,7 @@ top:
 	}
 
 stop:
-	dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - unable to find a runnable g, stopping") })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable - unable to find a runnable g, stopping") })
 	// We have nothing to do. If we're in the GC mark phase, can
 	// safely scan and blacken objects, and have work to do, run
 	// idle-time marking rather than give up the P.
@@ -2421,7 +2421,7 @@ stop:
 	if sched.runqsize != 0 {
 		gp := globrunqget(_p_, 0)
 		unlock(&sched.lock)
-		dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - popping g off of global runq") })
+		//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - popping g off of global runq") })
 		return gp, false
 	}
 	if releasep() != _p_ {
@@ -2450,7 +2450,7 @@ stop:
 		}
 	}
 
-	dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - checking all runqueues once again") })
+	//dprint(dara.DEBUG, func() { println("[GoRuntime]findrunnable (STOPPED) - checking all runqueues once again") })
 	// check all runqueues once again
 	for _, _p_ := range allpSnapshot {
 		if !runqempty(_p_) {
@@ -2808,7 +2808,9 @@ top:
 		goto top
 	}
 
-	gp = getScheduledGp(gp)
+	if DaraInitialised {
+		gp = getScheduledGp(gp)
+	}
 
 	execute(gp, inheritTime)
 }
@@ -2998,7 +3000,7 @@ func LogCrash(routine dara.RoutineInfo) {
 		return
 	}
 	if index >= dara.MAXLOGENTRIES {
-		throw("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
+		daraThrow("logging entries exceeded MAXLOGENTRIES, either modify dara/const.go or log less OwO")
 	}
 	e := &(procchan[DPid].Log[index])
 	(*e).Type = dara.CRASH_EVENT
@@ -3398,10 +3400,10 @@ func getScheduledGp(gp *g) *g {
 
 					if gp.gopc == procchan[DPid].RunningRoutine.Gpc && gp.goid == int64(procchan[DPid].RunningRoutine.Gid) {
 						dprint(dara.DEBUG, func() { println("[GoRuntime]getScheduledGp : Chosen goroutine is ready to be run") })
-					} else {
+					} /* else {
 						// Do we need a call to this at all?
 						gp = findallrunnableprocs(gp)
-					}
+					} */
 
 					/* Attempt 2 read everything off of allgs */
 					/* This did not seem to work, somewhere I was
@@ -3488,7 +3490,7 @@ func getScheduledGp(gp *g) *g {
 							ResetProcArr(gp)
 							globrunqput(gp)
 							//Here is the potential to die BUG
-							dstopm()
+							//dstopm()
 							goto replay
 						}
 
@@ -3513,6 +3515,7 @@ func getScheduledGp(gp *g) *g {
 }
 
 // Function written for Dara.
+/* DOESN'T COMPILE IN UPDATED CODE
 func findallrunnableprocs(gp *g) *g {
 
 gather:
@@ -3637,6 +3640,7 @@ gather:
 	ResetProcArr(gp)
 	return gp
 }
+*/
 
 func CheckAndResetProcArr(gp *g) (*g, bool) {
 	var found bool = false
@@ -3835,7 +3839,7 @@ func park_m(gp *g) {
 	dropg()
 	//Dara's way of handling sleeping threads during replay
 	//Instead of making the threads wait, put them on the ready queue instead
-	if (Replay || Explore) && gp.waitreason == "sleep" {
+	if (Replay || Explore) && gp.waitreason == waitReasonSleep {
 		ready(gp, 0, true)
 	}
 	if fn := _g_.m.waitunlockf; fn != nil {
@@ -4667,25 +4671,6 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 		_p_.goidcacheend = _p_.goidcache + _GoidCacheBatch
 	}
 	newg.goid = int64(_p_.goidcache)
-	_p_.goidcache++
-	if raceenabled {
-		newg.racectx = racegostart(callerpc)
-	}
-	if trace.enabled {
-		traceGoCreate(newg, newg.startpc)
-	}
-	releasem(_g_.m)
-
-	return newg
-}
-
-// saveAncestors copies previous ancestors of the given caller g and
-// includes infor for the current caller into a new set of tracebacks for
-// a g being created.
-func saveAncestors(callergp *g) *[]ancestorInfo {
-	// Copy all prior info, except for the root goroutine (goid 0).
-	if debug.tracebackancestors <= 0 || callergp.goid == 0 {
-		return nil
 	//DARA
 	//this is the trick addition of goroutines part
 	//For the sake of determanistic replay it is not good enough to
@@ -4728,6 +4713,26 @@ func saveAncestors(callergp *g) *[]ancestorInfo {
 		LogThreadCreation(procchan[DPid].Routines[newg.goid])
 	}
 	//\DARA
+	_p_.goidcache++
+	if raceenabled {
+		newg.racectx = racegostart(callerpc)
+	}
+	if trace.enabled {
+		traceGoCreate(newg, newg.startpc)
+	}
+	releasem(_g_.m)
+
+	return newg
+}
+
+// saveAncestors copies previous ancestors of the given caller g and
+// includes infor for the current caller into a new set of tracebacks for
+// a g being created.
+func saveAncestors(callergp *g) *[]ancestorInfo {
+	// Copy all prior info, except for the root goroutine (goid 0).
+	if debug.tracebackancestors <= 0 || callergp.goid == 0 {
+		return nil
+	}
 
 	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 && mainStarted {
 		wakep()
