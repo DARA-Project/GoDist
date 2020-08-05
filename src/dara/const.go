@@ -9,7 +9,7 @@ const (
 
 	//The number of preallocated communication channels in shared
 	//memory. This value can change in the future, for now 3 is the
-	//maximum number of Processes. Invariant: dara.CHANNELS >= procs. TODO
+	//maximum number of Processes. Invariant: dara.CHANNELS > procs. TODO
 	//assert this
     // 3 is maximum because DaraProcID starts from 1.... Need to fix that
 	CHANNELS = 4

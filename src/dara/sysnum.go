@@ -71,6 +71,7 @@ const (
     WG_ADD
     WG_WAIT
     CTX_DONE
-    CTX_CANCEL
+	CTX_CANCEL
+	DSYS_TIMER
 )
 

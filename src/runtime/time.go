@@ -83,17 +83,19 @@ var faketime int64
 // timeSleep puts the current goroutine to sleep for at least ns nanoseconds.
 //go:linkname timeSleep time.Sleep
 func timeSleep(ns int64) {
-    //Dara injection
-    if Is_dara_profiling_on() {
-        Dara_Debug_Print(func() { println("[SLEEP]", ns) })
-        argInfo := dara.GeneralType{Type: dara.INTEGER64, Integer64: ns}
-        syscallInfo := dara.GeneralSyscall{dara.DSYS_SLEEP, 1, 0, [10]dara.GeneralType{argInfo}, [10]dara.GeneralType{}}
-        Report_Syscall_To_Scheduler(dara.DSYS_SLEEP, syscallInfo)
-    }
+	// DARA: Don't report the call if the time is less than 0....Basically is a no-op function call.
 	if ns <= 0 {
 		return
 	}
 	gp := getg()
+	//Dara injection
+    if Is_dara_profiling_on() {
+        Dara_Debug_Print(func() { println("[SLEEP]", ns) })
+		argInfo := dara.GeneralType{Type: dara.INTEGER64, Integer64: ns}
+		argInfo2 := dara.GeneralType{Type: dara.INTEGER64, Integer64: gp.goid}
+        syscallInfo := dara.GeneralSyscall{dara.DSYS_SLEEP, 2, 0, [10]dara.GeneralType{argInfo, argInfo2}, [10]dara.GeneralType{}}
+        Report_Syscall_To_Scheduler(dara.DSYS_SLEEP, syscallInfo)
+    }
 	t := gp.timer
 	if t == nil {
 		t = new(timer)
@@ -146,6 +148,22 @@ func goroutineReady(arg interface{}, seq uintptr) {
 }
 
 func addtimer(t *timer) {
+	if DaraInitialised {
+		// Add the timer to a list of timers which is exposed
+		// to the global scheduler and have it choose firing off the timer as one of its actions.
+		TimerCount += 1
+		TimerInfo[TimerCount] = t
+		LogTimerEvent(t)
+		println(t.when)
+	}
+	if Explore {
+		// Only prevent a timer from getting installed if this is exploration!
+		return
+	}
+	if Record {
+		// Fuck timers for now
+		return
+	}
 	tb := t.assignBucket()
 	lock(&tb.lock)
 	tb.addtimerLocked(t)
