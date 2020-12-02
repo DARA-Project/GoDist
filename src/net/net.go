@@ -88,6 +88,7 @@ import (
 	"runtime"
 	"syscall"
 	"time"
+	"vclock"
 )
 
 // netGo and netCgo contain the state of the build tags used
@@ -164,6 +165,13 @@ type Conn interface {
 
 type conn struct {
 	fd *netFD
+
+	// bytes until next vclockHeader
+	byteCounter int
+}
+
+type vclockHeader struct {
+	vclock vclock.VClock
 }
 
 func (c *conn) ok() bool { return c != nil && c.fd != nil }
@@ -218,6 +226,20 @@ func (c *conn) Read(b []byte) (int, error) {
 
 // Write implements the Conn Write method.
 func (c *conn) Write(b []byte) (int, error) {
+	var daraSelf int
+	daraSelf = runtime.DaraProcessID()
+
+	print("daraSelf: ")
+	println(daraSelf)
+
+	// print("DPid: ")
+	// println(runtime.DPid)
+
+	// println(runtime.procchan[0])
+
+	// var vclock_message []byte
+	// vclock_message = 
+
 	if !c.ok() {
 		// DARA Instrumentation
 		if runtime.Is_dara_profiling_on() {
